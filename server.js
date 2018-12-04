@@ -16,6 +16,7 @@ const serverOptions = {
 
 /* Globals */
 app = express(); // Instantiate the express app
+console.log('app.env', app.get('env'))
 
 /* Variables */
 var server;
@@ -103,9 +104,11 @@ function serverCreated(){
         }
     });
 
-    // If you want to watch for file changes, install chokidar-socket-emitter (or your favorite watcher)
-    // and uncomment this line:
-    // require('chokidar-socket-emitter')({app: server})
+    if( app.get('env') === 'development' ){
+        // If you want to watch for file changes, install chokidar-socket-emitter (or your favorite watcher)
+        // and uncomment this line: (probably only want to do in dev mode...)
+        // require('chokidar-socket-emitter')({app: server})
+    }
 }
 
 function setCustomCacheControl(res, reqPath){
