@@ -1,0 +1,30 @@
+{
+    "googleClient": {
+        "CLIENT_ID": "742894255659-33r2knrd7rarbv8c9pg9mkjsbiina5g2.apps.googleusercontent.com"
+    },
+    "mongoClient": {
+        "dbName": "appData",
+        "connectOptions": {
+            "auth": {
+                "user": "appUser",
+                "password": "an apple falls on unsuspecting users"
+            },
+            "authSource": "appData_users",
+            "ssl": true,
+            "sslKey": "~/.ssl/mongoClient.key",
+            "sslCert": "~/.ssl/mongoClient.crt",
+            "sslCA": "/etc/ssl/mongo_dev/mongod.pem"
+        },
+        "schemas": {
+            "UserSchema": {
+                "username": { "type": "String", "unique": true, "required": true }
+            }
+        }
+    },
+    "mongoClient_userManager": {
+        "auth": {
+            "user": "userManager",
+            "password": "an apple grows when it isn't micro-managed!"
+        }
+    }
+}

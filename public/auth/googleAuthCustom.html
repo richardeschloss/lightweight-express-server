@@ -1,0 +1,27 @@
+<html>
+<head>
+    <title>Google Auth (Custom Button Example)</title>
+    <link href="../fonts/Roboto.css" rel="stylesheet" type="text/css">
+    <link href="auth.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <div id="gSignInWrapper">
+            <span class="label">Sign in with:</span>
+            <div id="signinBtn" class="customGPlusSignIn">
+                <span class="icon"></span>
+                <span class="buttonText">Google</span>
+            </div>
+        </div>
+
+        <script src="//apis.google.com/js/api:client.js"></script>
+        <script src="./auth.js"></script>
+        <script type="text/javascript">
+            var authClient = new GoogleClient({
+                signinBtn: document.getElementById('signinBtn'),
+                successRedirect: 'app/welcome.html',
+                failureRedirect: '/'
+            });
+            authClient.load();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,30 @@
+<html>
+    <head>
+    </head>
+
+    <body>
+        <div id="avatar_container">
+            <img id="avatar_img" src=""
+                style="border-radius: 50%;
+                height: 32px;
+                width: 32px;
+                margin: auto;
+                object-fit: cover;">
+            </img>
+            <div id="avatar_name"></div>
+            <input id="signoutBtn" type="button" value="Signout"/>
+        </div>
+        <hr>
+        Welcome!
+
+        <script src="//apis.google.com/js/api:client.js"></script>
+        <script src="../auth/auth.js"></script>
+        <script type="text/javascript">
+            var authClient = new GoogleClient({
+                signoutBtn: document.getElementById('signoutBtn'),
+                signoutRedirect: '/'
+            });
+            authClient.load();
+        </script>
+    </body>
+</html>

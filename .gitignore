@@ -1,2 +1,8 @@
 node_modules
 localhost.*
+notes.txt
+*.crt
+*.csr
+*.key
+*.p12
+.ssl
