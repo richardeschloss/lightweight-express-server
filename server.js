@@ -1,22 +1,26 @@
 /* Requires */
 const argv = require('minimist')(process.argv.slice(2))
+const bodyParser = require('body-parser');
 const debug = require('debug')('server');
 const express = require('express');
 const logger = require('morgan');
+const passport = require('passport')
 const path = require('path');
 const securityUtils = require('./utils/security');
 const serveStatic = require('serve-static');
+const session = require("express-session");
+
 const serverOptions = {
-    proto: argv.proto || 'http',
+    proto: argv.proto || 'https',
     host: argv.host || 'localhost',
     port: argv.port || 8080,
-    genSSL: argv.genSSL,
     browser: argv.browser
 }
 
+console.log('serverOptions...', serverOptions)
+
 /* Globals */
 app = express(); // Instantiate the express app
-console.log('app.env', app.get('env'))
 
 /* Variables */
 var server;
@@ -33,7 +37,9 @@ const createServer = {
         // Using self-signed cert here (only do in dev mode!...never deploy!)
         // Remember to import the cert into your browser so that it trusts it
         // (question: do you trust yourself localhost?)
-        var options = {}
+        var options = {
+
+        }
         var keys = securityUtils.loadSelfSignedCert()
         if( keys.err ){
             console.log('Error loading cert', keys.err)
@@ -49,7 +55,10 @@ const createServer = {
         // Using self-signed cert here (only do in dev mode!...never deploy!)
         // Remember to import the cert into your browser so that it trusts it
         // (question: do you trust yourself localhost?)
-        var options = {}
+        var options = {
+            requestCert: true,
+            rejectUnauthorized: false
+        };
         var keys = securityUtils.loadSelfSignedCert()
         if( keys.err ){
             console.log('Error loading cert', keys.err)
@@ -57,6 +66,7 @@ const createServer = {
         }
         options.key = keys.key;
         options.cert = keys.cert;
+        options.ca = [keys.cert];
         server = https.createServer(options, app);
     }
 }
@@ -65,15 +75,15 @@ const supportedBrowsers = ['chromium', 'firefox', 'iceweasal'] // Tweak this lis
 /* Methods */
 function serverCreated(){
     server
-    .listen(serverOptions.port, serverOptions.host)
+    .listen(serverOptions.port)//, serverOptions.host)
     .on('error', (error) => {
         if (error.syscall !== 'listen') {
             throw error;
         }
 
-        var bind = typeof port === 'string'
-            ? 'Pipe ' + port
-            : 'Port ' + port;
+        var bind = typeof serverOptions.port === 'string'
+            ? 'Pipe ' + serverOptions.port
+            : 'Port ' + serverOptions.port;
 
         // handle specific listen errors with friendly messages
         switch (error.code) {
@@ -119,16 +129,37 @@ function setCustomCacheControl(res, reqPath){
 
 /* Config */
 app.use(logger('dev'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+
+/* Static paths (front-end usually goes in "public" folder for most devs)*/
+app.use(serveStatic(path.join(__dirname, 'node_modules'), {
+    maxAge: '1d'
+}))
 app.use(serveStatic(path.join(__dirname, 'public'), {
     setHeaders: setCustomCacheControl // optional
 }))
 
-if( serverOptions.genSSL ){
-    securityUtils.generateSelfSignedCert(() => {
-        console.log('self-signed SSL cert created...')
-        console.log(' Now you can restart the server with --https or --http2, but remember to omit --genSSL from the command so you do not keep re-generating the cert...')
-    });
-} else {
-    createServer[serverOptions.proto]();
-    if( server ) serverCreated();
+/* Passport Session Config */
+app.use(session({ secret: "cats", resave: false, saveUninitialized: false })); // TBD: added options
+app.use(passport.initialize());
+app.use(passport.session());
+
+/* Routes */
+if( serverOptions.proto == 'https' || serverOptions.proto == 'http2' ){
+    // Only support authenticate routes if server is running a secure protocol
+    app.use('/users', require('./routes/users/users.routes'));
 }
+app.use('/app', require('./routes/app.routes'))
+
+app.use(function(err, req, res, next) {
+    console.log('err occurred', err)
+    if( err.msg == 'Unauthorized' ){
+        return res.status(401).json({redirectTo: '/'})
+    }
+
+    res.json(err);
+});
+
+createServer[serverOptions.proto]();
+if( server ) serverCreated();

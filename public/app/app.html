@@ -1,0 +1,29 @@
+<html>
+<script src="../jquery/dist/jquery.min.js"></script>
+<script>
+// TBD
+var currentUser;
+$.get('/users/secure/currentUser')
+.then((user) => {
+    console.log('Current user:', user)
+    currentUser = user;
+}, (err) => {
+    console.log('err?', err)
+    document.location.href = err.responseJSON.redirectTo;
+})
+
+function deleteUser(){
+    $.ajax({url: '/users/secure/' + currentUser.id, method: 'DELETE'})
+    .then(console.log, console.error)
+}
+
+</script>
+
+<body>
+    Welcome to your app!
+    <button onclick="deleteUser()">Delete User</button>
+    <!-- <form action="/users/secure/findAll" method="GET">
+        <input type="submit" value="FindAll..."/>
+    </form> -->
+</body>
+</html>

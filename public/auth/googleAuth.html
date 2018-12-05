@@ -1,0 +1,23 @@
+<html lang="en">
+  <head>
+    <meta name="google-signin-scope" content="profile email">
+    <meta name="google-signin-client_id">
+  </head>
+  <body>
+    <div id="signinBtn" class="g-signin2" data-onsuccess="authSuccess" data-theme="dark"></div>
+
+    <script src="./auth.js"></script>
+    <script>
+        var authClient = new GoogleClient({
+            successRedirect: 'app/welcome.html',
+            failureRedirect: '/'
+        });
+        document.getElementsByName('google-signin-client_id')[0].setAttribute('content', authClient.CLIENT_ID)
+        function authSuccess(googleUser){
+            authClient.authSuccess(googleUser)
+        }
+    </script>
+
+    <script src="//apis.google.com/js/platform.js" async defer></script>
+  </body>
+</html>
