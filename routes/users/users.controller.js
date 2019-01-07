@@ -151,7 +151,7 @@ class UserCtrl{
     }
 
     validateGoogleClient(req, res, next){
-        const CLIENT_ID = config.googleClient.CLIENT_ID;// '742894255659-33r2knrd7rarbv8c9pg9mkjsbiina5g2.apps.googleusercontent.com';
+        const CLIENT_ID = config.googleClient.CLIENT_ID;
         const idToken = req.body.idToken;
 
         const {OAuth2Client} = require('google-auth-library');

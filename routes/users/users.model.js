@@ -1,10 +1,10 @@
 /* Requires */
-const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
 
 /* Constants */
 const Schema = mongoose.Schema;
-const UserSchema = {
+const UserSchema = { // Thank you Jason Watmore for your blog post...
     username: { type: String, unique: true, required: true },
     passwordHash: { type: String, required: true },
     firstName: { type: String },
