@@ -13,7 +13,7 @@ Then you can spin up the server from the command-line:
 
 > npm run debug # starts up the http server in "debug mode"
 
-> node server.js --genSSL (generates a self-signed cert, saves the keys to localhost.key and localhost.crt respectively. No server is started here)
+> node utils/security.js --action generateSelfSignedCert (generates a self-signed cert, saves the keys to localhost.key and localhost.crt respectively. No server is started here)
 
 > node server.js --proto https --browser chromium (starts up an https server and auto-loads* the start page in chromium...well, there's a gotcha...chromium has to trust the cert)
 
