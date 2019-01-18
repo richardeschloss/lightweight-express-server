@@ -1,6 +1,8 @@
 {
-    "googleClient": {
-        "CLIENT_ID": "742894255659-33r2knrd7rarbv8c9pg9mkjsbiina5g2.apps.googleusercontent.com"
+    "expressSession": {
+        "secret": "cats",
+        "resave": false,
+        "saveUninitialized": false
     },
     "mongoClient": {
         "dbName": "appData",

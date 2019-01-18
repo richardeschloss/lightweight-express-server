@@ -10,6 +10,7 @@ const securityUtils = require('./utils/security');
 const serveStatic = require('serve-static');
 const session = require("express-session");
 
+const config = require('./config.json')
 const serverOptions = {
     proto: argv.proto || 'https',
     host: argv.host || 'localhost',
@@ -70,12 +71,12 @@ const createServer = {
         server = https.createServer(options, app);
     }
 }
-const supportedBrowsers = ['chromium', 'firefox', 'iceweasal'] // Tweak this list based on your app's requirements...
+const supportedBrowsers = ['chromium', 'firefox'] // Tweak this list based on your app's requirements...
 
 /* Methods */
 function serverCreated(){
     server
-    .listen(serverOptions.port)//, serverOptions.host)
+    .listen(serverOptions.port, serverOptions.host)
     .on('error', (error) => {
         if (error.syscall !== 'listen') {
             throw error;
@@ -100,6 +101,7 @@ function serverCreated(){
         }
     })
     .on('listening', () => {
+        if( exports.serverListening ) exports.serverListening();
         var addr = server.address();
         var bind = typeof addr === 'string'
             ? 'pipe ' + addr
@@ -122,7 +124,8 @@ function serverCreated(){
 }
 
 function setCustomCacheControl(res, reqPath){
-    if( reqPath.match(/jspm_packages|bower_components/) != null ){
+    var regEx = new RegExp(/jspm_packages|bower_components/) // Define the reg ex
+    if( reqPath.match(regEx) != null ){
         res.setHeader('Cache-Control', 'public, max-age=60') // cache dependencies in the browser for [60] seconds
     }
 }
@@ -132,23 +135,23 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-/* Static paths (front-end usually goes in "public" folder for most devs)*/
-app.use(serveStatic(path.join(__dirname, 'node_modules'), {
-    maxAge: '1d'
+/* Static paths */
+app.use(serveStatic(path.resolve('node_modules'), {
+    maxAge: '1d' // Cache node_modules that are used in the browser
 }))
-app.use(serveStatic(path.join(__dirname, 'public'), {
+app.use(serveStatic(path.resolve('public'), { // front-end usually goes in "public" folder
     setHeaders: setCustomCacheControl // optional
 }))
 
 /* Passport Session Config */
-app.use(session({ secret: "cats", resave: false, saveUninitialized: false })); // TBD: added options
+app.use(session(config.expressSession));
 app.use(passport.initialize());
 app.use(passport.session());
 
 /* Routes */
 if( serverOptions.proto == 'https' || serverOptions.proto == 'http2' ){
     // Only support authenticate routes if server is running a secure protocol
-    app.use('/users', require('./routes/users/users.routes'));
+    app.use('/users', require('./routes/users.routes'));
 }
 app.use('/app', require('./routes/app.routes'))
 

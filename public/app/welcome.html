@@ -18,11 +18,14 @@
         Welcome!
 
         <script src="//apis.google.com/js/api:client.js"></script>
+        <script src="../jquery/dist/jquery.min.js"></script>
         <script src="../auth/auth.js"></script>
         <script type="text/javascript">
             var authClient = new GoogleClient({
                 signoutBtn: document.getElementById('signoutBtn'),
-                signoutRedirect: '/'
+                signoutRedirect: '/',
+                avatarImgElem: document.getElementById('avatar_img'),
+                avatarElem: document.getElementById('avatar_name')
             });
             authClient.load();
         </script>

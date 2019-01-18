@@ -3,8 +3,14 @@
     <body>
         Generate Client Cert:
         <form method="POST" action="/users/generateClientCert">
-            <input type="text" name="name" placeholder="Name"/>
-            <input type="password" name="pass" placeholder="Passphrase"/>
+            <input type="text" name="name" placeholder="Name"/><br>
+            <input type="text" name="emailAddress" placeholder="Email Address"/><br>
+            <input type="text" name="organization" placeholder="Organization"/><br>
+            <input type="text" name="organizationalUnit" placeholder="Organizational Unit"/><br>
+            <input type="text" name="countryCode" placeholder="Country Code (2-letter)"/><br>
+            <input type="text" name="state" placeholder="State"/><br>
+            <input type="text" name="city" placeholder="City"/><br>
+            <input type="password" name="pass" placeholder="Passphrase"/><br>
 
             <input type="submit"/>
         </form>

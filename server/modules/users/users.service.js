@@ -1,12 +1,12 @@
 /* Requires */
 const bcrypt = require('bcryptjs');
-const MongoStorage = require('../../utils/storage').MongoStorage;
+const { MongoStorage } = require('../../utils/storage');
 const mongoStorage = new MongoStorage();
 
 mongoStorage.connect().catch(console.error);
 
 /* Models */
-const User = require('./users.model').User;
+const { User } = require('./users.model');
 
 /* Class */
 class UserService{
@@ -21,7 +21,7 @@ class UserService{
             const errMsgs = {
                 11000: 'Username already exists, pick another one'
             }
-            throw { msg: errMsgs[error.code] || error };
+            throw { err: error.code, msg: errMsgs[error.code] || error };
         });
     }
 
@@ -39,6 +39,18 @@ class UserService{
 
     async findOne(userInfo){
         return await User.findOne(userInfo).catch(console.error);
+    }
+
+    async findOrCreate(query, userInfo){
+        var user = await User.findOne(query)
+        if( user ){
+            return user;
+        }
+
+        userInfo.passwordHash = bcrypt.hashSync(userInfo.password, 10);
+        var createdUser = new User(userInfo);
+        return await createdUser.save()
+        .catch(console.error);
     }
 
     async update(userInfo){

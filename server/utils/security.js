@@ -19,9 +19,17 @@ exports.generateClientCert = function(options, callback){
             '-out', options.client.csr,
             '-nodes',
             '-days', options.client.days,
-            '-subj', `/CN=${options.client.name}`
+            '-subj', [`/CN=${options.client.name}`,
+                `/emailAddress=${options.client.emailAddress}`,
+                `/O=${options.client.organization}`,
+                `/OU=${options.client.organizationalUnit}`,
+                `/C=${options.client.countryCode}`,
+                `/ST=${options.client.state}`,
+                `/L=${options.client.city}`
+            ].join('')
         ]
 
+        debug(cmd, args.join(' '))
         spawn(cmd, args)
         .on('close', () => {
             debug('Generated', options.client.csr)
@@ -90,12 +98,21 @@ exports.generateSelfSignedCert = function(options, callback){
         '-keyout', options.key || 'localhost.key',
         '-new',
         '-out', options.crt || 'localhost.crt',
-        '-subj', '/CN=' + (options.domain || 'localhost'),
+        '-subj', [
+            `/CN=(${options.domain || 'localhost'})`,
+            `/emailAddress=${options.emailAddress || ''}`,
+            `/O=${options.organization || ''}`,
+            `/OU=${options.organizationalUnit || ''}`,
+            `/C=${options.countryCode || ''}`,
+            `/ST=${options.state || ''}`,
+            `/L=${options.city || ''}`
+        ].join(''),
         '-sha256',
         '-days', options.days || 365,
         '-extensions', options.extSection || 'myExt',
         '-config', options.configFile || '/etc/ssl/openssl.cnf'
     ]
+    debug(cmd, args.join(' '))
     spawn(cmd, args)
     .on('close', () => {
         callback();
@@ -130,7 +147,6 @@ exports.viewCertificate = function(options, callback){
 }
 
 if( argv.action ){
-    console.log(argv.action, '...')
     if( !exports[argv.action] ){
         console.log('possible actions:\r\n', Object.keys(exports))
         process.exit(1);

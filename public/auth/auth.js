@@ -2,13 +2,15 @@
 
 class GoogleClient{
     constructor(cfg){
-        this.CLIENT_ID = '742894255659-33r2knrd7rarbv8c9pg9mkjsbiina5g2.apps.googleusercontent.com';
         this.auth2 = {};
         this.signinBtn = cfg.signinBtn;
         this.signoutBtn = cfg.signoutBtn;
         this.successRedirect = cfg.successRedirect;
         this.failureRedirect = cfg.failureRedirect;
         this.signoutRedirect = cfg.signoutRedirect;
+
+        this.avatarImgElem = cfg.avatarImgElem;
+        this.avatarElem = cfg.avatarElem;
     }
 
     authSuccess(googleUser){
@@ -23,12 +25,13 @@ class GoogleClient{
         alert(JSON.stringify(error, undefined, 2));
     }
 
-    load(){
+    async load(){
         var self = this;
+        var clientInfo = await $.get('/users/auth/google/getClientID')
         gapi.load('auth2', function(){
             // Retrieve the singleton for the GoogleAuth library and set up the client.
             gapi.auth2.init({
-                client_id: self.CLIENT_ID,
+                client_id: clientInfo.CLIENT_ID,
                 cookiepolicy: 'single_host_origin',
                 // Request scopes in addition to 'profile' and 'email'
                 //scope: 'additional_scope'
@@ -43,9 +46,10 @@ class GoogleClient{
                     )
                 }
 
-                if( self.signoutBtn ){
-                    self.loadUserInfo();
+                if( self.signoutBtn ){ // TBD: I think this belongs somewhere else...
                     self.signoutBtn.addEventListener('click', () => {
+			// uncomment, eventually:
+			// var auth2 = gapi.auth2.getAuthInstance();
                         auth2.signOut()
                         .then((resp) => {
                             console.log('user signed out')
@@ -53,20 +57,25 @@ class GoogleClient{
                         });
                     })
                 }
-            })
 
+                self.loadUserInfo();
+            });
         });
     }
 
     loadUserInfo(){
         var googleUser = this.auth2.currentUser.get();
         var profile = googleUser.getBasicProfile();
-        if( !profile ){
+        if( profile ){
+            if( this.signinBtn ){
+                location.pathname = this.successRedirect;
+                return;
+            }
+            this.printProfile(profile)
+            this.styleAvatar(profile)
+        } else {
             location.pathname = this.signoutRedirect;
-            return;
         }
-        this.printProfile(profile)
-        this.styleAvatar(profile)
     }
 
     printProfile(profile){
@@ -78,14 +87,14 @@ class GoogleClient{
     }
 
     styleAvatar(profile){
-        document.getElementById('avatar_img').src = profile.getImageUrl();
-        document.getElementById('avatar_name').innerText = profile.getName();
+        if( this.avatarImgElem ) this.avatarImgElem.src = profile.getImageUrl();
+        if( this.avatarElem ) this.avatarElem.innerText = profile.getName();
     }
 
     verifyToken(id_token, profile){
         var self = this;
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', '../users/googleClient');
+        xhr.open('POST', '../users/auth/google/validateGoogleClient');
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.onload = function() {
             if( xhr.status == 200 ){
