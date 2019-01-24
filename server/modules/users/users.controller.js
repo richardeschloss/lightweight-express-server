@@ -7,6 +7,14 @@ const UserService = require('./users.service').UserService;
 const securityUtils = require('../../utils/security')
 
 const os = require('os')
+
+// Require googleClient.json. This code expects the json to be structured as:
+/*
+{
+    "CLIENT_ID": "[your_client_id].apps.googleusercontent.com",
+    "CLIENT_SECRET": "[your_client_secret]"
+}
+*/
 const googleClient = require(os.homedir() + '/.oauth/googleClient.json')
 
 /* Constants */
@@ -42,7 +50,7 @@ passport.use(new LocalStrategy(
     }
 ));
 
-// Google strategy config
+// Google strategy config (if googleClient is defined)
 passport.use(new GoogleStrategy({
     clientID: googleClient.CLIENT_ID,
     clientSecret: googleClient.CLIENT_SECRET,

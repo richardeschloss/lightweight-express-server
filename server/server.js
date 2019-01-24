@@ -149,8 +149,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 /* Routes */
-if( serverOptions.proto == 'https' || serverOptions.proto == 'http2' ){
-    // Only support authenticate routes if server is running a secure protocol
+if( ['https', 'http2'].includes(serverOptions.proto) ){
+    // Only support users routes if server is running a secure protocol
     app.use('/users', require('./routes/users.routes'));
 }
 app.use('/app', require('./routes/app.routes'))

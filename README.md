@@ -19,6 +19,8 @@ Then you can spin up the server from the command-line:
 
 > node server/server.js --proto http2 (starts up a spdy server, but in the browser, you still have to prefix the URL with "https://" not "http2://" or "spdy://")
 
+* NOTE: the users module also supports authentication via Google using oauth2.0. users.controller.js requires a googleClient.json file with the credentials (See the note in the code); the Google-related code can probably go in it's own module (TBD)
+
 ## So you want to use self-signed cert?? Are you sure?
 If you don't import your self-signed cert and set it as trusted, your browser won't trust the https/http2 server and you won't see index.html (which is actually a good thing the browser is doing!)
 But, since you're developing on your local machine, and you probably trust your machine (and yourself), you can circumvent this safeguard by importing the cert:

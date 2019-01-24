@@ -22,11 +22,5 @@
                 "username": { "type": "String", "unique": true, "required": true }
             }
         }
-    },
-    "mongoClient_userManager": {
-        "auth": {
-            "user": "userManager",
-            "password": "an apple grows when it isn't micro-managed!"
-        }
     }
 }
