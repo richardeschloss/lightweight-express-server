@@ -5,7 +5,7 @@ Lightweight Express Server (seriously lightweight)
 Lightweight express server has the very basic setup to spin up either an http, https, or spdy (http2) server without the bloat of generated code.
 Left lightweight so that you can customize as you wish, with comments to help guide you. This is not a binary, it's the source code that you can toy with.
 
-## Plain-jane usage 
+## Plain-jane usage
 First, clone the repo... (you know the drill, git clone.. npm install...)
 
 Then you can spin up the server from the command-line:
@@ -15,11 +15,11 @@ Then you can spin up the server from the command-line:
 
 > node utils/security.js --action generateSelfSignedCert (generates a self-signed cert, saves the keys to localhost.key and localhost.crt respectively. No server is started here)
 
-> node server.js --proto https --browser chromium (starts up an https server and auto-loads* the start page in chromium...well, there's a gotcha...chromium has to trust the cert)
+> node server/server.js --proto https --browser chromium (starts up an https server and auto-loads* the start page in chromium...well, there's a gotcha...chromium has to trust the cert)
 
-> node server.js --proto http2 (starts up a spdy server, but in the browser, you still have to prefix the URL with "https://" not "http2://" or "spdy://")
+> node server/server.js --proto http2 (starts up a spdy server, but in the browser, you still have to prefix the URL with "https://" not "http2://" or "spdy://")
 
-## So you want to use self-signed cert?? Are you sure? 
+## So you want to use self-signed cert?? Are you sure?
 If you don't import your self-signed cert and set it as trusted, your browser won't trust the https/http2 server and you won't see index.html (which is actually a good thing the browser is doing!)
 But, since you're developing on your local machine, and you probably trust your machine (and yourself), you can circumvent this safeguard by importing the cert:
 
