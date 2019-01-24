@@ -1,6 +1,6 @@
 {
   "name": "lightweight-express-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Lightweight express server has the very basic setup to spin up either an http, https, or spdy server without the bloat of generated code. ",
   "main": "server.js",
   "scripts": {
