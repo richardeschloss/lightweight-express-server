@@ -18,7 +18,7 @@ const serverOptions = {
     browser: argv.browser
 }
 
-console.log('serverOptions...', serverOptions)
+console.log('serverOptions:\r\n', serverOptions)
 
 /* Globals */
 app = express(); // Instantiate the express app

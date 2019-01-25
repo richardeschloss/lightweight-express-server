@@ -87,7 +87,7 @@ https.getPromise = function(path, headers){
     return deferred.promise;
 }
 
-https.post = function(path, postData){
+https.post = function(path, postData, headers){
     var deferred = q.defer();
     const postStr = JSON.stringify(postData)
     const options = {
@@ -100,6 +100,11 @@ https.post = function(path, postData){
             'Content-Type': 'application/json'
         }
     }
+
+    if( headers ){
+        Object.assign(options.headers, headers)
+    }
+
     https.request(options, (res) => {
         deferred.notify({statusCode: res.statusCode, headers: res.headers})
         if( res.statusCode != 200 && res.statusCode != 302 ){
@@ -222,16 +227,137 @@ describe('Users Module', function(){
             })
         })
 
-        it('shall allow the current user to be deleted, if authenticated', function(done){
+        it('shall NOT allow the current user info to be updated by a different user', function(done){
             var headers = {};
             https.post('/users/auth/local', userInfo)
             .then((resp) => {
                 https.getPromise(`/users/secure/currentUser`, headers)
                 .then((resp) => {
                     var currentUser = JSON.parse(resp)
+                    currentUser.id = '123-wrong-id'
+                    currentUser.password = 'a really long password';
+                    currentUser.lastName = 'maidenName-givenName'
+                    https.post(`/users/secure/update`, currentUser, headers)
+                    .then((resp) => {
+                        var json = JSON.parse(resp)
+                        assert(json.err == 'wrongUserId')
+                        done()
+                    }, done)
+                }, (err) => {
+                    console.log('Error getting currentUser', err)
+                    done(err);
+                })
+            }, (err) => {
+                console.log('login err', err)
+                done(err)
+            }, (data) => {
+                if( data.headers )
+                    headers.Cookie = data.headers['set-cookie']
+            });
+        })
+
+        it('shall allow the current user info to be updated by the current user', function(done){
+            var headers = {};
+            https.post('/users/auth/local', userInfo)
+            .then((resp) => {
+                https.getPromise(`/users/secure/currentUser`, headers)
+                .then((resp) => {
+                    var currentUser = JSON.parse(resp)
+                    currentUser.password = 'a really long password';
+                    currentUser.lastName = 'maidenName-givenName'
+                    https.post(`/users/secure/update`, currentUser, headers)
+                    .then((resp) => {
+                        var json = JSON.parse(resp)
+                        assert(json.msg == 'updated user successfully')
+                        done()
+                    }, done)
+                }, (err) => {
+                    console.log('Error getting currentUser', err)
+                    done(err);
+                })
+            }, (err) => {
+                console.log('login err', err)
+                done(err)
+            }, (data) => {
+                if( data.headers )
+                    headers.Cookie = data.headers['set-cookie']
+            });
+        })
+
+        it('shall NOT allow the current user to be deleted by a different user', function(done){
+            var headers = {};
+            userInfo.password = 'a really long password'; // Remember...updated user in prev step
+            https.post('/users/auth/local', userInfo)
+            .then((resp) => {
+                https.getPromise(`/users/secure/currentUser`, headers)
+                .then((resp) => {
+                    var currentUser = JSON.parse(resp)
+                    currentUser.id = '123-wrong-id'
                     console.log('currentUser', currentUser.id)
-                    https.deletePromise(`/users/secure/delete/${currentUser.id}`, headers)
-                    .then(done, done)
+                    https.post(`/users/secure/delete`, currentUser, headers)
+                    .then((resp) => {
+                        var json = JSON.parse(resp);
+                        assert(json.err == 'wrongUserId' )
+                        done();
+                    }, done)
+                }, (err) => {
+                    console.log('Error getting currentUser', err)
+                    done(err);
+                })
+            }, (err) => {
+                console.log('login err', err)
+                done(err)
+            }, (data) => {
+                if( data.headers )
+                    headers.Cookie = data.headers['set-cookie']
+            });
+        })
+
+        it('shall NOT allow the current user to be deleted if credentials are missing', function(done){
+            var headers = {};
+            userInfo.password = 'a really long password'; // Remember...updated user in prev step
+            https.post('/users/auth/local', userInfo)
+            .then((resp) => {
+                https.getPromise(`/users/secure/currentUser`, headers)
+                .then((resp) => {
+                    var currentUser = JSON.parse(resp)
+                    console.log('currentUser', currentUser.id)
+                    https.post(`/users/secure/delete`, {
+                        id: currentUser.id
+                    }, headers)
+                    .then((resp) => {
+                        var json = JSON.parse(resp);
+                        assert(json.err == 'missingCredentials' )
+                        done();
+                    }, done)
+                }, (err) => {
+                    console.log('Error getting currentUser', err)
+                    done(err);
+                })
+            }, (err) => {
+                console.log('login err', err)
+                done(err)
+            }, (data) => {
+                if( data.headers )
+                    headers.Cookie = data.headers['set-cookie']
+            });
+        })
+
+        it('shall allow the current user to be deleted, if authenticated', function(done){
+            var headers = {};
+            userInfo.password = 'a really long password'; // Remember...updated user in a previous test case
+            https.post('/users/auth/local', userInfo)
+            .then((resp) => {
+                https.getPromise(`/users/secure/currentUser`, headers)
+                .then((resp) => {
+                    var currentUser = JSON.parse(resp)
+                    currentUser.password = userInfo.password;
+                    https.post(`/users/secure/delete`, currentUser, headers)
+                    .then((resp) => {
+                        var json = JSON.parse(resp);
+                        assert(json.msg == 'succesfully deleted user ' + currentUser.id)
+                        done();
+                    }, done)
                 }, (err) => {
                     console.log('Error getting currentUser', err)
                     done(err);

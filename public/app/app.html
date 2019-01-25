@@ -11,19 +11,10 @@ $.get('/users/secure/currentUser')
     console.log('err?', err)
     document.location.href = err.responseJSON.redirectTo;
 })
-
-function deleteUser(){
-    $.ajax({url: '/users/secure/' + currentUser.id, method: 'DELETE'})
-    .then(console.log, console.error)
-}
-
 </script>
 
 <body>
     Welcome to your app!
-    <button onclick="deleteUser()">Delete User</button>
-    <!-- <form action="/users/secure/findAll" method="GET">
-        <input type="submit" value="FindAll..."/>
-    </form> -->
+    <a href="/users/update.html">Update User</a>
 </body>
 </html>

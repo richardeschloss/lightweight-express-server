@@ -10,10 +10,9 @@ const userCtrl = new UserCtrl();
 /* Routes */
 secureRoutes
 .get('/currentUser', userCtrl.findCurrentUser)
-.get('/findAll', userCtrl.findAll)
 .get('/find/:id', userCtrl.findById)
 .post('/update', userCtrl.updateUser)
-.delete('/delete/:id', userCtrl.delete)
+.post('/delete/', userCtrl.delete)
 
 userRoutes
 .get('/auth/google', userCtrl.authenticateGoogle)

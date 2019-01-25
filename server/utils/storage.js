@@ -1,6 +1,7 @@
 'use strict';
 
 /* Requires */
+const debug = require('debug')('utils:storage')
 const fs = require('fs');
 const mongoose = require('mongoose');
 const os = require('os');
@@ -36,7 +37,7 @@ class MongoStorage{
 
     async connect(){
         if( mongoose.connection.readyState == 1 ){
-            console.log('already connected')
+            debug('already connected')
             return;
         }
         var options = config.mongoClient.connectOptions;
@@ -62,9 +63,13 @@ class MongoStorage{
             options.authSource = options.authSource || this.dbName;
         }
         var connectionStr = this.buildConnectionURI();
-        console.log('Connecting to db...', connectionStr)
+        debug('Connecting to db...', connectionStr)
         await mongoose.connect(connectionStr, options)
-        console.log('mongoose connection state', mongoose.connection.readyState)
+        console.log('Connected to db', {
+            host: this.dbHost,
+            port: this.dbPort,
+            dbName: this.dbName
+        });
     }
 
     async disconnect(){

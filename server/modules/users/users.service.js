@@ -3,15 +3,12 @@ const bcrypt = require('bcryptjs');
 const { MongoStorage } = require('../../utils/storage');
 const mongoStorage = new MongoStorage();
 
-mongoStorage.connect().catch(console.error);
-
 /* Models */
 const { User } = require('./users.model');
 
 /* Class */
 class UserService{
-    constructor(){
-    }
+    constructor(){}
 
     async addUser(userInfo){
         var user = new User(userInfo);
@@ -23,6 +20,14 @@ class UserService{
             }
             throw { err: error.code, msg: errMsgs[error.code] || error };
         });
+    }
+
+    async connect(){
+        return await mongoStorage.connect().catch(console.error);
+    }
+
+    async disconnect(){
+        return await mongoStorage.disconnect().catch(console.error);
     }
 
     async delete(id){
@@ -68,6 +73,21 @@ class UserService{
         userInfo.dateModified = Date.now();
         Object.assign(user, userInfo);
         return await user.save().catch(console.error);
+    }
+
+    async validateUser(userInfo){
+        var user = await User.findById(userInfo.id)
+        .catch((err) => {
+            throw new Error(err);
+        })
+
+        if( !user ){
+            throw { msg: 'user not found' };
+        }
+
+        if( !user.validPassword(userInfo.password) ){
+            throw { msg: 'incorrect password' }
+        }
     }
 }
 

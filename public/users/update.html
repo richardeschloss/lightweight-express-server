@@ -1,14 +1,44 @@
 <!doctype html>
 <html>
     <body>
-        Register User:
-        <form method="POST" action="/users/secure/update">
-            <input type="hidden" name="id" placeholder="id" value="5c2ef5a36040382691aab09c"/>
-            <input type="text" name="username" placeholder="Name" value="Rich"/>
-            <input type="password" name="password" placeholder="Passphrase" value="123"/>
-            <input type="text" name="firstName" placeholder="First Name" value="Rich"/>
-            <input type="text" name="lastName" placeholder="First Name" value="S...."/>
+        Update User:
+        <form id="updateForm" method="POST" action="/users/secure/update">
+            <input type="hidden" name="id" placeholder="id"/><br>
+            <label>Username: </label> <input type="text" name="username"/><br>
+            <label>Password: </label> <input type="password" name="password" placeholder="Passphrase"/><br>
+            <label>First Name: </label> <input type="text" name="firstName" placeholder="First Name"/><br>
+            <label>Last Name: </label> <input type="text" name="lastName" placeholder="First Name"/><br>
             <input type="submit"/>
         </form>
+
+        <button onclick="deleteUser()">Delete User</button>
+
+    <script src="../jquery/dist/jquery.min.js"></script>
+    <script>
+        var currentUser;
+        function initForm(){
+            $.get('/users/secure/currentUser')
+            .then((resp) => {
+                currentUser = resp;
+                var fields = Object.keys(resp);
+                fields.forEach((field) => {
+                    $(`#updateForm > input[name="${field}"]`).val(resp[field])
+                })
+            })
+            .catch((err) => {
+                if( err.status == 401 ){
+                    document.location.href = err.responseJSON.redirectTo;
+                }
+            })
+        }
+        initForm();
+
+        function deleteUser(){
+            var postData = currentUser;
+            postData.password = $(`#updateForm > input[name="password"]`).val()
+            $.post('/users/secure/delete', postData)
+            .then(console.log, console.error)
+        }
+    </script>
     </body>
 </html>

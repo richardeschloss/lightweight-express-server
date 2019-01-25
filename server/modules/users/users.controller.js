@@ -1,9 +1,9 @@
 /* Requires */
 const debug = require('debug')('controllers:users')
 const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
-const UserService = require('./users.service').UserService;
+const { Strategy:LocalStrategy } = require('passport-local');
+const { OAuth2Strategy:GoogleStrategy } = require('passport-google-oauth');
+const { UserService }  = require('./users.service');
 const securityUtils = require('../../utils/security')
 
 const os = require('os')
@@ -72,8 +72,7 @@ passport.use(new GoogleStrategy({
 
 /* Class */
 class UserCtrl{
-    constructor(){
-    }
+    constructor(){}
 
     addUser(req, res, next){
         userService.addUser(req.body)
@@ -125,6 +124,10 @@ class UserCtrl{
         })(req, res, next);
     }
 
+    connect(){
+        return userService.connect();
+    }
+
     checkUser(req, res, next){
         if( !req.user ){
             next({msg: 'Unauthorized'})
@@ -134,12 +137,36 @@ class UserCtrl{
     }
 
     delete(req, res, next){
-        userService.delete(req.params.id)
+        if( req.user.id != req.body.id ){
+            return next({
+                err: 'wrongUserId',
+                msg: "sorry, you can only delete YOUR user info, not someone else's"
+            })
+        }
+
+        if( !req.body.username || !req.body.password ){
+            return next({
+                err: 'missingCredentials',
+                msg: "credentials are required to confirm delete"
+            })
+        }
+
+        if( req.user.username != req.body.username ){
+            return next({
+                err: 'incorrectUsername',
+                msg: 'incorrect username'
+            })
+        }
+
+        userService.validateUser(req.body)
         .then((resp) => {
-            if( !resp ) return next({err: 'deleteFailed', msg: 'Delete failed. Invalid user id?'})
-            res.json({msg: 'deleted user' + req.params.id})
-        })
-        .catch(err => next(err));
+            return userService.delete(req.body.id)
+            .then((resp) => {
+                if( !resp ) return next({err: 'deleteFailed', msg: 'Delete failed. Invalid user id?'})
+                res.json({msg: 'succesfully deleted user ' + req.body.id})
+            })
+            .catch(next);
+        }, next)
     }
 
     findAll(req, res, next){
@@ -199,8 +226,14 @@ class UserCtrl{
     }
 
     updateUser(req, res, next){
+        if( req.user.id != req.body.id ){
+            return next({
+                err: 'wrongUserId',
+                msg: "sorry, you can only change YOUR user info, not someone else's"
+            })
+        }
         userService.update(req.body)
-        .then((user) => res.json('ok'))
+        .then((user) => res.json({msg: 'updated user successfully'}))
         .catch((err) => next(err));
     }
 
