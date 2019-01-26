@@ -1,4 +1,5 @@
 /* Requires */
+const debug = require('debug')('utils:requester');
 const https = require('https');
 const q = require('q');
 const securityUtils = require('../utils/security')
@@ -6,7 +7,7 @@ const securityUtils = require('../utils/security')
 /* Constants */
 const keys = securityUtils.loadSelfSignedCert()
 if( keys.err ){
-    console.log('Error loading cert', keys.err)
+    debug('Error loading cert', keys.err)
     process.exit(1);
 }
 
@@ -34,10 +35,11 @@ function request(requestOptions, postData, responseOptions){
 
     Object.assign(options, requestOptions)
     if( options.method == 'POST' ){
-        options['Content-Type'] = 'application/json';
+        options.headers['Content-Type'] = 'application/json';
         postStr = JSON.stringify(postData)
     }
-    console.log('options', options)
+    debug('options', options)
+    debug('postStr', postStr)
 
     https.request(options, (res) => {
         deferred.notify({statusCode: res.statusCode, headers: res.headers})

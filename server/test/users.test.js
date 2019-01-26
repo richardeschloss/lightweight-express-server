@@ -2,26 +2,9 @@
 const assert = require('chai').assert;
 const https = require('https');
 const q = require('q');
-const qStr = require('querystring');
-const securityUtils = require('../utils/security')
+const { request } = require('../utils/requester')
 
 /* Constants */
-const keys = securityUtils.loadSelfSignedCert()
-if( keys.err ){
-    console.log('Error loading cert', keys.err)
-    process.exit(1);
-}
-
-const httpsAgent = new https.Agent({
-    keepAliveMsecs: 10000,
-    keepAlive: true,
-    maxSockets: Infinity,
-    maxFreeSockets: 256,
-    key: keys.key,
-    cert: keys.cert,
-    ca: [keys.cert]
-})
-
 const userInfo = {
     username: 'test',
     password: 'test',
@@ -29,87 +12,65 @@ const userInfo = {
     lastName: 'User'
 }
 
-/* Methods */
-// Going to pretty much send loopback requests to test routes, controller, service in one shot
-https.getPromise = function(path, headers){
-    var deferred = q.defer();
-    const options = {
-        agent: httpsAgent,
-        hostname: 'localhost',
-        port: 8080,
-        path: path,
-        method: 'GET'
-    }
-    if( headers ){
-        options.headers = headers;
-    }
+const authRequestOptions = {
+    path: `/users/auth/local`,
+    method: 'POST',
+    headers: {}
+}
 
-    https.request(options, (res) => {
-        deferred.notify({statusCode: res.statusCode, headers: res.headers})
-        if( res.statusCode != 200 && res.statusCode != 302 ){
-            deferred.reject(res.statusCode);
-            return;
+const currentUserRequestOptions = {
+    path: `/users/secure/currentUser`,
+    headers: {}
+}
+
+var currentUser, diffUser;
+
+/* Methods */
+function authUser(info, returnOptions){
+    var deferred = q.defer();
+    request(authRequestOptions, info, returnOptions)
+    .then(deferred.resolve, deferred.reject, (data) => {
+        if( data.headers && data.headers['set-cookie'] ){
+            authRequestOptions.headers.Cookie = data.headers['set-cookie']
         }
-        var resp = '';
-        res
-        .on('error', deferred.reject)
-        .on('data', (data) => { resp += data; })
-        .on('end', () => { deferred.resolve(resp)})
     })
-    .on('error', deferred.reject)
-    .end()
     return deferred.promise;
 }
 
-https.post = function(path, postData, headers){
+function getCurrentUser(){
     var deferred = q.defer();
-    const postStr = JSON.stringify(postData)
-    const options = {
-        agent: httpsAgent,
-        hostname: 'localhost',
-        port: 8080,
-        path: path,
+    currentUserRequestOptions.headers.Cookie = authRequestOptions.headers.Cookie;
+    return request(currentUserRequestOptions, userInfo, { returnJSON: true});
+}
+
+function deleteUser(info){
+    var deferred = q.defer();
+    var requestOptions = {
+        path: `/users/secure/delete`,
+        method: 'POST',
+        headers: currentUserRequestOptions.headers
+    }
+    return request(requestOptions, info, { returnJSON: true});
+}
+
+function updateUser(info){
+    var deferred = q.defer();
+    var requestOptions = {
+        path: `/users/secure/update`,
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            Cookie: authRequestOptions.headers.Cookie
         }
     }
-
-    if( headers ){
-        Object.assign(options.headers, headers)
-    }
-
-    https.request(options, (res) => {
-        deferred.notify({statusCode: res.statusCode, headers: res.headers})
-        if( res.statusCode != 200 && res.statusCode != 302 ){
-            deferred.reject(res.statusCode);
-            return;
-        }
-        var resp = '';
-        res
-        .on('error', deferred.reject)
-        .on('data', (data) => { resp += data; })
-        .on('end', () => { deferred.resolve(resp)})
-    })
-    .on('error', deferred.reject)
-    .end(postStr)
-    return deferred.promise;
+    return request(requestOptions, info, { returnJSON: true});
 }
-
-/* Test Setup */
-before(function(done){
-    var server = require('../server.js')
-    server.serverListening = done;
-})
 
 /* Test Suite */
 describe('Users Module', function(){
     describe('User Registration', function(){
         it('shall allow users to be added to the database', (done) => {
-            https.post('/users/register', userInfo)
-            .then((resp) => {
-                var json = JSON.parse(resp)
-                console.log('json', json)
+            request({path: '/users/register', method: 'POST'}, userInfo, { returnJSON: true })
+            .then((json) => {
                 userInfo.id = json.id;
                 done(json.err);
             })
@@ -123,9 +84,8 @@ describe('Users Module', function(){
                 username: 'abba',
                 password: 'dabba'
             }
-            https.post('/users/auth/local', badUserInfo)
-            .then((resp) => {
-                var json = JSON.parse(resp);
+            authUser(badUserInfo, { returnJSON: true })
+            .then((json) => {
                 assert(json.err == 'invalidUser')
                 done();
             })
@@ -133,13 +93,12 @@ describe('Users Module', function(){
         })
 
         it('shall handle invalid password', (done) => {
-            const badUserInfo = {
+            const badPassInfo = {
                 username: 'test',
                 password: 'dabba'
             }
-            https.post('/users/auth/local', badUserInfo)
-            .then((resp) => {
-                var json = JSON.parse(resp);
+            authUser(badPassInfo, { returnJSON: true })
+            .then((json) => {
                 assert(json.err == 'invalidPass')
                 done();
             })
@@ -147,7 +106,7 @@ describe('Users Module', function(){
         })
 
         it('shall allow users to be authenticated with username/password', (done) => {
-            https.post('/users/auth/local', userInfo)
+            authUser(userInfo, {})
             .then((resp) => {
                 assert(resp == 'Found. Redirecting to /app/app.html') // Successful login
                 done();
@@ -158,11 +117,8 @@ describe('Users Module', function(){
 
     describe('Secured Routes', function(){
         it('shall not allow current user info to be retrieved if not authenticated', function(done){
-            https.getPromise(`/users/secure/currentUser`)
-            .then((resp) => {
-                console.log('resp', resp)
-                done()
-            })
+            getCurrentUser()
+            .then((resp) => { done() })
             .catch((err) => {
                 assert(err == 401)
                 done()
@@ -170,175 +126,64 @@ describe('Users Module', function(){
         })
 
         it('shall allow current user info, less password, to be retrieved if authenticated', function(done){
-            var headers = {};
-            https.post('/users/auth/local', userInfo)
-            .then((resp) => {
-                https.getPromise(`/users/secure/currentUser`, headers)
-                .then((resp) => {
-                    var currentUser = JSON.parse(resp)
-                    console.log('currentUser', currentUser.id)
-                    assert(currentUser != undefined)
-                    assert(currentUser.password == undefined)
-                    assert(currentUser.passwordHash == undefined)
-                    done()
-                })
-                .catch(done)
-            }, (err) => {
-                console.log('login err', err)
-                done(err)
-            }, (data) => {
-                if( data.headers )
-                    headers.Cookie = data.headers['set-cookie']
+            authUser(userInfo, {})
+            .then((getCurrentUser))
+            .then((json) => {
+                currentUser = json;
+                assert(currentUser != undefined)
+                assert(currentUser.password == undefined)
+                assert(currentUser.passwordHash == undefined)
+                done()
             })
+            .catch(done)
         })
 
         it('shall NOT allow the current user info to be updated by a different user', function(done){
-            var headers = {};
-            https.post('/users/auth/local', userInfo)
-            .then((resp) => {
-                https.getPromise(`/users/secure/currentUser`, headers)
-                .then((resp) => {
-                    var currentUser = JSON.parse(resp)
-                    currentUser.id = '123-wrong-id'
-                    currentUser.password = 'a really long password';
-                    currentUser.lastName = 'maidenName-givenName'
-                    https.post(`/users/secure/update`, currentUser, headers)
-                    .then((resp) => {
-                        var json = JSON.parse(resp)
-                        assert(json.err == 'wrongUserId')
-                        done()
-                    }, done)
-                }, (err) => {
-                    console.log('Error getting currentUser', err)
-                    done(err);
-                })
-            }, (err) => {
-                console.log('login err', err)
-                done(err)
-            }, (data) => {
-                if( data.headers )
-                    headers.Cookie = data.headers['set-cookie']
-            });
+            diffUser = {
+                id: '123-wrong-id',
+                username: currentUser.username,
+                password: currentUser.password
+            }
+            updateUser(diffUser)
+            .then((json) => {
+                assert(json.err == 'wrongUserId')
+                done()
+            }, done)
         })
 
         it('shall allow the current user info to be updated by the current user', function(done){
-            var headers = {};
-            https.post('/users/auth/local', userInfo)
-            .then((resp) => {
-                https.getPromise(`/users/secure/currentUser`, headers)
-                .then((resp) => {
-                    var currentUser = JSON.parse(resp)
-                    currentUser.password = 'a really long password';
-                    currentUser.lastName = 'maidenName-givenName'
-                    https.post(`/users/secure/update`, currentUser, headers)
-                    .then((resp) => {
-                        var json = JSON.parse(resp)
-                        assert(json.msg == 'updated user successfully')
-                        done()
-                    }, done)
-                }, (err) => {
-                    console.log('Error getting currentUser', err)
-                    done(err);
-                })
-            }, (err) => {
-                console.log('login err', err)
-                done(err)
-            }, (data) => {
-                if( data.headers )
-                    headers.Cookie = data.headers['set-cookie']
-            });
+            currentUser.password = 'a really long password';
+            currentUser.lastName = 'maidenName-givenName'
+            updateUser(currentUser)
+            .then((json) => {
+                console.log('json....', json)
+                assert(json.msg == 'updated user successfully')
+                done()
+            }, done)
         })
 
         it('shall NOT allow the current user to be deleted by a different user', function(done){
-            var headers = {};
-            userInfo.password = 'a really long password'; // Remember...updated user in prev step
-            https.post('/users/auth/local', userInfo)
-            .then((resp) => {
-                https.getPromise(`/users/secure/currentUser`, headers)
-                .then((resp) => {
-                    var currentUser = JSON.parse(resp)
-                    currentUser.id = '123-wrong-id'
-                    console.log('currentUser', currentUser.id)
-                    https.post(`/users/secure/delete`, currentUser, headers)
-                    .then((resp) => {
-                        var json = JSON.parse(resp);
-                        assert(json.err == 'wrongUserId' )
-                        done();
-                    }, done)
-                }, (err) => {
-                    console.log('Error getting currentUser', err)
-                    done(err);
-                })
-            }, (err) => {
-                console.log('login err', err)
-                done(err)
-            }, (data) => {
-                if( data.headers )
-                    headers.Cookie = data.headers['set-cookie']
-            });
+            deleteUser(diffUser)
+            .then((json) => {
+                assert(json.err == 'wrongUserId' )
+                done();
+            }, done)
         })
 
         it('shall NOT allow the current user to be deleted if credentials are missing', function(done){
-            var headers = {};
-            userInfo.password = 'a really long password'; // Remember...updated user in prev step
-            https.post('/users/auth/local', userInfo)
-            .then((resp) => {
-                https.getPromise(`/users/secure/currentUser`, headers)
-                .then((resp) => {
-                    var currentUser = JSON.parse(resp)
-                    console.log('currentUser', currentUser.id)
-                    https.post(`/users/secure/delete`, {
-                        id: currentUser.id
-                    }, headers)
-                    .then((resp) => {
-                        var json = JSON.parse(resp);
-                        assert(json.err == 'missingCredentials' )
-                        done();
-                    }, done)
-                }, (err) => {
-                    console.log('Error getting currentUser', err)
-                    done(err);
-                })
-            }, (err) => {
-                console.log('login err', err)
-                done(err)
-            }, (data) => {
-                if( data.headers )
-                    headers.Cookie = data.headers['set-cookie']
-            });
+            deleteUser({id: currentUser.id})
+            .then((json) => {
+                assert(json.err == 'missingCredentials')
+                done();
+            }, done)
         })
 
         it('shall allow the current user to be deleted, if authenticated', function(done){
-            var headers = {};
-            userInfo.password = 'a really long password'; // Remember...updated user in a previous test case
-            https.post('/users/auth/local', userInfo)
-            .then((resp) => {
-                https.getPromise(`/users/secure/currentUser`, headers)
-                .then((resp) => {
-                    var currentUser = JSON.parse(resp)
-                    currentUser.password = userInfo.password;
-                    https.post(`/users/secure/delete`, currentUser, headers)
-                    .then((resp) => {
-                        var json = JSON.parse(resp);
-                        assert(json.msg == 'succesfully deleted user ' + currentUser.id)
-                        done();
-                    }, done)
-                }, (err) => {
-                    console.log('Error getting currentUser', err)
-                    done(err);
-                })
-            }, (err) => {
-                console.log('login err', err)
-                done(err)
-            }, (data) => {
-                if( data.headers )
-                    headers.Cookie = data.headers['set-cookie']
-            });
+            deleteUser(currentUser)
+            .then((json) => {
+                assert(json.msg == 'succesfully deleted user ' + currentUser.id)
+                done();
+            }, done)
         })
     })
-})
-
-/* Test Cleanup */
-after((done) => {
-    process.exit(); // cleaner way would be to stop server and disconnect from mongo
 })

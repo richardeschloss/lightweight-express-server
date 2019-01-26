@@ -81,6 +81,7 @@ class UserCtrl{
     }
 
     delete(req, res, next){
+        console.log('delete', req.body)
         if( req.user.id != req.body.id ){
             return next({
                 err: 'wrongUserId',

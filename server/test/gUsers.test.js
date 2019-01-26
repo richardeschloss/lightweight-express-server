@@ -2,12 +2,6 @@
 const { assert } = require('chai');
 const { request } = require('../utils/requester')
 
-/* Test Setup */
-before(function(done){
-    var server = require('../server.js')
-    server.serverListening = done;
-})
-
 /* Test Cases */
 describe('Google:gUsers Module', function(){
     it('shall retrieve the Google clientID for the app', (done) => {
@@ -18,9 +12,4 @@ describe('Google:gUsers Module', function(){
         })
         .catch(done)
     })
-})
-
-/* Test Cleanup */
-after((done) => {
-    process.exit();
 })
