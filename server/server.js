@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const debug = require('debug')('server');
 const express = require('express');
 const logger = require('morgan');
+const { MongoStorage } = require('./utils/storage');
 const passport = require('passport')
 const path = require('path');
 const securityUtils = require('./utils/security');
@@ -71,6 +72,7 @@ const createServer = {
         server = https.createServer(options, app);
     }
 }
+const mongoStorage = new MongoStorage();
 const supportedBrowsers = ['chromium', 'firefox'] // Tweak this list based on your app's requirements...
 
 /* Methods */
@@ -101,7 +103,9 @@ function serverCreated(){
         }
     })
     .on('listening', () => {
-        if( exports.serverListening ) exports.serverListening();
+        if( exports.serverListening ){
+            exports.serverListening();
+        }
         var addr = server.address();
         var bind = typeof addr === 'string'
             ? 'pipe ' + addr
@@ -165,5 +169,27 @@ app.use(function(err, req, res, next) {
     res.json(err);
 });
 
+/* Start server */
 createServer[serverOptions.proto]();
 if( server ) serverCreated();
+
+/* Connect to DB */
+mongoStorage
+.connect()
+.then((resp) => {
+    console.log(resp)
+    if( exports.mongoConnected ) {
+        exports.mongoConnected();
+    }
+})
+.catch(console.error)
+
+/* Exports */
+exports.disconnectMongo = function(){
+    console.log('disconnect mongo...')
+    mongoStorage.disconnect()
+}
+exports.stop = function(){
+    console.log('close server...')
+    server.close();
+}

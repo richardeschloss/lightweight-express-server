@@ -1,5 +1,4 @@
-const { MongoStorage } = require('../../../utils/storage');
-const mongoStorage = new MongoStorage();
+/* Requires */
 
 /* Models */
 const { GoogleUser } = require('./gUsers.models');

@@ -1,8 +1,27 @@
+/* Requires */
+const async = require('async');
+
+var server;
+
+/* Test Setup */
 before(function(done){
-    var server = require('../server.js')
-    server.serverListening = done;
+    var doneCnt = 0;
+    var events = [
+        'serverListening',
+        'mongoConnected'
+    ]
+
+    server = require('../server.js')
+    async.each(events, (evt, callback) => {
+        server[evt] = function(){
+            console.log(evt)
+            callback();
+        };
+    }, done)
 })
 
+/* Test Cleanup */
 after(function(){
-    process.exit()
+    server.disconnectMongo();
+    server.stop();
 })

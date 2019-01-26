@@ -1,18 +1,13 @@
 /* Requires */
-const bcrypt = require('bcryptjs');
-const { MongoStorage } = require('../../utils/storage');
-const mongoStorage = new MongoStorage();
 
 /* Models */
 const { User } = require('./users.model');
 
 /* Class */
 class UserService{
-    constructor(){}
-
     async addUser(userInfo){
         var user = new User(userInfo);
-        user.passwordHash = bcrypt.hashSync(userInfo.password, 10);
+        user.hashPassword(userInfo.password)
         return await user.save()
         .catch((error) => {
             const errMsgs = {
@@ -52,7 +47,7 @@ class UserService{
             return user;
         }
 
-        userInfo.passwordHash = bcrypt.hashSync(userInfo.password, 10);
+        user.hashPassword(userInfo.password)
         var createdUser = new User(userInfo);
         return await createdUser.save()
         .catch(console.error);
@@ -67,11 +62,12 @@ class UserService{
         if( !user ){
             throw { msg: 'user not found' };
         }
-        if( userInfo.password ){
-            userInfo.passwordHash = bcrypt.hashSync(userInfo.password, 10);
-        }
-        userInfo.dateModified = Date.now();
+
         Object.assign(user, userInfo);
+        if( user.password ){
+            user.hashPassword(userInfo.password)
+        }
+        user.dateModified = Date.now();
         return await user.save().catch(console.error);
     }
 

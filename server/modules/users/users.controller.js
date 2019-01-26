@@ -10,13 +10,12 @@ const userService = new UserService();
 
 /* Passport Config */
 passport.serializeUser(function(user, done) {
-    console.log('userCtrl:serializeUser', user)
-    console.log('userCtrl:serializeUser.id....', user.id)
+    debug('userCtrl:serializeUser', user)
     done(null, user.id);
 });
 
 passport.deserializeUser(function(id, done) {
-    console.log('userCtrl:deserializeUser', id)
+    debug('userCtrl:deserializeUser', id)
     userService.findById(id)
     .then((user) => done(null, user))
     .catch(done);
@@ -43,8 +42,6 @@ passport.use(new LocalStrategy(
 
 /* Class */
 class UserCtrl{
-    constructor(){}
-
     addUser(req, res, next){
         userService.addUser(req.body)
         .then((resp) => res.json({msg: 'successfully added user', id: resp.id}))
@@ -68,9 +65,9 @@ class UserCtrl{
         })(req, res, next);
     }
 
-    connect(){
-        return userService.connect();
-    }
+    // connect(){
+    //     return userService.connect();
+    // }
 
     checkUser(req, res, next){
         if( !req.user ){
