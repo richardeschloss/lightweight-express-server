@@ -105,6 +105,10 @@ function serverCreated(){
     .on('listening', () => {
         if( exports.serverListening ){
             exports.serverListening();
+            exports.stop = function(){
+                console.log('close server...')
+                server.close();
+            }
         }
         var addr = server.address();
         var bind = typeof addr === 'string'
@@ -180,16 +184,10 @@ mongoStorage
     console.log(resp)
     if( exports.mongoConnected ) {
         exports.mongoConnected();
+        exports.disconnectMongo = function(){
+            console.log('disconnect mongo...')
+            mongoStorage.disconnect()
+        }
     }
 })
 .catch(console.error)
-
-/* Exports */
-exports.disconnectMongo = function(){
-    console.log('disconnect mongo...')
-    mongoStorage.disconnect()
-}
-exports.stop = function(){
-    console.log('close server...')
-    server.close();
-}

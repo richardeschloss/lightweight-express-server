@@ -6,7 +6,6 @@ const { UserCtrl } = require('../modules/users/users.controller');
 const appRoutes = express.Router();
 const secureRoutes = express.Router();
 const userCtrl = new UserCtrl();
-// userCtrl.connect()
 
 secureRoutes
 .get('/getSecureDummyInfo', (req, res, next) => {
