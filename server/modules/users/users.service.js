@@ -4,6 +4,9 @@
 const { User } = require('./users.model');
 
 /* Class */
+// NOTE: mongoose is pretty cool..we tell mongoose to connect to the db from the start (in server.js)
+// and we can just start using the mongoose models. It will queue up the operations even if connecting
+// to the db were still in progress.
 class UserService{
     async addUser(userInfo){
         var user = new User(userInfo);
@@ -17,12 +20,17 @@ class UserService{
         });
     }
 
-    async connect(){
-        return await mongoStorage.connect().catch(console.error);
-    }
+    async authenticate(userInfo){
+        var user = await this.findOne({ username: userInfo.username })
+        if( !user ){
+            throw { err: 'invalidUser', msg: 'Incorrect username.' }
+        }
 
-    async disconnect(){
-        return await mongoStorage.disconnect().catch(console.error);
+        if( !user.validPassword(userInfo.password) ){
+            throw { err: 'invalidPass', msg: 'Incorrect password.' }
+        }
+        delete user.passwordHash;
+        return user;
     }
 
     async delete(id){

@@ -24,19 +24,9 @@ passport.deserializeUser(function(id, done) {
 // Local strategy config (i.e., username/password, password is hashed and salted with bcrypt)
 passport.use(new LocalStrategy(
     function(username, password, done) {
-        userService.findOne({ username: username })
-        .then((user) => {
-            if( !user ){
-                return done(null, false, { err: 'invalidUser', msg: 'Incorrect username.' });
-            }
-
-            if( !user.validPassword(password) ){
-                return done(null, false, { err: 'invalidPass', msg: 'Incorrect password.' });
-            }
-            delete user.passwordHash;
-            return done(null, user);
-        })
-        .catch((err) => done(err))
+        userService.authenticate({username: username, password: password})
+        .then((user) => done(null, user))
+        .catch(done)
     }
 ));
 
@@ -54,20 +44,12 @@ class UserCtrl{
                 return next(err);
             }
 
-            if( !user ){
-                return next(info);
-            }
-
             req.logIn(user, function(err) {
                 if (err) { return next(err); }
                 return res.redirect('/app/app.html');
             });
         })(req, res, next);
     }
-
-    // connect(){
-    //     return userService.connect();
-    // }
 
     checkUser(req, res, next){
         if( !req.user ){
