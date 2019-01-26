@@ -55,10 +55,7 @@ class UserService{
             return user;
         }
 
-        user.hashPassword(userInfo.password)
-        var createdUser = new User(userInfo);
-        return await createdUser.save()
-        .catch(console.error);
+        return await this.addUser(userInfo);
     }
 
     async update(userInfo){
