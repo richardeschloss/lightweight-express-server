@@ -2,30 +2,21 @@
 const debug = require('debug')('controllers:users')
 const passport = require('passport');
 const { Strategy:LocalStrategy } = require('passport-local');
-const { OAuth2Strategy:GoogleStrategy } = require('passport-google-oauth');
 const { UserService }  = require('./users.service');
 const securityUtils = require('../../utils/security')
-
-const os = require('os')
-
-// Require googleClient.json. This code expects the json to be structured as:
-/*
-{
-    "CLIENT_ID": "[your_client_id].apps.googleusercontent.com",
-    "CLIENT_SECRET": "[your_client_secret]"
-}
-*/
-const googleClient = require(os.homedir() + '/.oauth/googleClient.json')
 
 /* Constants */
 const userService = new UserService();
 
 /* Passport Config */
 passport.serializeUser(function(user, done) {
+    console.log('userCtrl:serializeUser', user)
+    console.log('userCtrl:serializeUser.id....', user.id)
     done(null, user.id);
 });
 
 passport.deserializeUser(function(id, done) {
+    console.log('userCtrl:deserializeUser', id)
     userService.findById(id)
     .then((user) => done(null, user))
     .catch(done);
@@ -50,26 +41,6 @@ passport.use(new LocalStrategy(
     }
 ));
 
-// Google strategy config (if googleClient is defined)
-passport.use(new GoogleStrategy({
-    clientID: googleClient.CLIENT_ID,
-    clientSecret: googleClient.CLIENT_SECRET,
-    callbackURL: 'https://localhost:8080/users/auth/google/callback'
-  },
-  function(accessToken, refreshToken, profile, done) {
-      userService.findOrCreate({'googleProfile.id': profile.id}, {
-          username: profile.displayName,
-          password: accessToken,
-          firstName: profile.name.givenName,
-          lastName: profile.name.familyName,
-          googleId: profile.id,
-          googleProfile: profile
-      })
-      .then((user) => done(null, user))
-      .catch((err) => done(err));
-  }
-));
-
 /* Class */
 class UserCtrl{
     constructor(){}
@@ -88,33 +59,6 @@ class UserCtrl{
 
             if( !user ){
                 return next(info);
-            }
-
-            req.logIn(user, function(err) {
-                if (err) { return next(err); }
-                return res.redirect('/app/app.html');
-            });
-        })(req, res, next);
-    }
-
-    authenticateGoogle(req, res, next){
-        passport.authenticate('google', {
-            scope: [
-                'profile',
-                'email',
-                'openid'
-            ]
-        })(req, res, next);
-    }
-
-    googleAuthCallback(req, res, next){
-        passport.authenticate('google', function(err, user, info) {
-            if( err ){
-                return next(err);
-            }
-
-            if( !user ){
-                res.json(info)
             }
 
             req.logIn(user, function(err) {
@@ -221,10 +165,6 @@ class UserCtrl{
         })
     }
 
-    getGoogleClientID(req, res, next){
-        res.json({CLIENT_ID: googleClient.CLIENT_ID})
-    }
-
     updateUser(req, res, next){
         if( req.user.id != req.body.id ){
             return next({
@@ -251,34 +191,6 @@ class UserCtrl{
         }
     }
 
-    validateGoogleClient(req, res, next){
-        const CLIENT_ID = googleClient.CLIENT_ID;
-        const idToken = req.body.idToken;
-
-        const {OAuth2Client} = require('google-auth-library');
-        const client = new OAuth2Client(CLIENT_ID);
-        async function verify() {
-          const ticket = await client.verifyIdToken({
-              idToken: idToken,
-              audience: CLIENT_ID,  // Specify the CLIENT_ID of the app that accesses the backend
-              // Or, if multiple clients access the backend:
-              //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
-          });
-          const payload = ticket.getPayload();
-          const userid = payload['sub'];
-          // If request specified a G Suite domain:
-          //const domain = payload['hd'];
-        }
-        verify()
-        .then((resp) => {
-            debug('google client validated idToken=', idToken)
-            res.status(200)
-            .send('success')
-        }, (err) => {
-            res.status(401)
-            .send('verify_err')
-        });
-    }
 }
 
 exports.UserCtrl = UserCtrl;

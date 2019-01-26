@@ -1,10 +1,5 @@
-const GoogleProfile = {
-    id: String,
-    displayName: String,
-    name: {},
-    emails: [],
-    photos: []
-}
+/* Requires */
+const { GoogleUser } = require('../google/gUsers/gUsers.schemas')
 
 const User = {
     username: { type: String, unique: true, required: true },
@@ -15,8 +10,7 @@ const User = {
     dateModified: { type: Date, default: Date.now },
 
     // Google-related:
-    googleProfile: GoogleProfile
+    googleProfile: GoogleUser
 }
 
-exports.GoogleProfile = GoogleProfile;
 exports.User = User;

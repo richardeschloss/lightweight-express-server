@@ -31,32 +31,6 @@ const userInfo = {
 
 /* Methods */
 // Going to pretty much send loopback requests to test routes, controller, service in one shot
-https.deletePromise = function(path, headers){
-    var deferred = q.defer();
-    const options = {
-        agent: httpsAgent,
-        hostname: 'localhost',
-        port: 8080,
-        path: path,
-        method: 'DELETE'
-    }
-    if( headers ){
-        options.headers = headers;
-    }
-
-    https.request(options, (res) => {
-        deferred.notify({statusCode: res.statusCode, headers: res.headers})
-        if( res.statusCode != 200 && res.statusCode != 302 ){
-            deferred.reject(res.statusCode);
-            return;
-        }
-        deferred.resolve();
-    })
-    .on('error', deferred.reject)
-    .end()
-    return deferred.promise;
-}
-
 https.getPromise = function(path, headers){
     var deferred = q.defer();
     const options = {
@@ -179,15 +153,6 @@ describe('Users Module', function(){
                 done();
             })
             .catch(done);
-        })
-
-        it('shall retrieve the Google clientID for the app', (done) => {
-            https.getPromise(`/users/auth/google/getClientID`)
-            .then((resp) => {
-                console.log('resp', resp)
-                done()
-            })
-            .catch(done)
         })
     })
 

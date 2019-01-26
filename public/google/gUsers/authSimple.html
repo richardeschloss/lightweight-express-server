@@ -5,14 +5,20 @@
   </head>
   <body>
     <div id="signinBtn" class="g-signin2" data-onsuccess="authSuccess" data-theme="dark"></div>
-
+    <script src="../../jquery/dist/jquery.min.js"></script>
     <script src="./auth.js"></script>
     <script>
         var authClient = new GoogleClient({
             successRedirect: 'app/welcome.html',
             failureRedirect: '/'
         });
-        document.getElementsByName('google-signin-client_id')[0].setAttribute('content', authClient.CLIENT_ID)
+        $.get('/google/gUsers/auth/getClientID')
+        .then((clientInfo) => {
+            document.getElementsByName('google-signin-client_id')[0].setAttribute('content', clientInfo.CLIENT_ID)
+        }, (err) => {
+            console.log('err retrieving client', err)
+        })
+
         function authSuccess(googleUser){
             authClient.authSuccess(googleUser)
         }

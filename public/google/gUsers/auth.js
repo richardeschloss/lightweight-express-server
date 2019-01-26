@@ -27,7 +27,7 @@ class GoogleClient{
 
     async load(){
         var self = this;
-        var clientInfo = await $.get('/users/auth/google/getClientID')
+        var clientInfo = await $.get('/google/gUsers/auth/getClientID')
         gapi.load('auth2', function(){
             // Retrieve the singleton for the GoogleAuth library and set up the client.
             gapi.auth2.init({
@@ -93,17 +93,12 @@ class GoogleClient{
 
     verifyToken(id_token, profile){
         var self = this;
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', '../users/auth/google/validateGoogleClient');
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.onload = function() {
-            if( xhr.status == 200 ){
-                console.log('Server verified...signed in as: ' + profile.getName());
-                location.pathname = self.successRedirect;
-            } else {
-                location.pathname = self.failureRedirect;
-            }
-        };
-        xhr.send('idToken=' + id_token);
+        $.post('/google/gUsers/auth/validateClient', {
+            idToken: id_token
+        })
+        .then((response) => {
+            console.log('Server verified...signed in as: ' + profile.getName());
+        })
+        .catch(console.error)
     }
 }
