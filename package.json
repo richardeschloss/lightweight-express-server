@@ -8,7 +8,7 @@
 	"dev": "nodemon server/server.js",
 	"start": "node server/server.js",
     "test": "mocha server/test",
-	"test_module": "mocha server/test/users.test.js"
+	"test_module": "mocha server/test/gUsers.test.js"
   },
   "keywords": [
     "Lightweight",

@@ -1,6 +1,23 @@
 /* Requires */
+const { AppServer } = require('../server.js');
 const { assert } = require('chai');
+const async = require('async');
 const { request } = require('../utils/requester')
+
+/* Constants */
+const appServer = new AppServer({});
+
+/* Test Setup */
+before(function(done){
+	appServer.start();
+	var events = [
+		'dbConnected',
+		'serverListening'
+    ]
+	async.each(events, (evt, callback) => {
+		appServer[evt] = callback;
+	}, done)
+})
 
 /* Test Cases */
 describe('Google:gUsers Module', function(){
@@ -12,4 +29,9 @@ describe('Google:gUsers Module', function(){
         })
         .catch(done)
     })
+})
+
+/* Test Cleanup */
+after(function(){
+	appServer.stop();
 })

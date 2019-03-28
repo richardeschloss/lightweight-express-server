@@ -71,7 +71,6 @@ function updateUser(info){
 /* Test Setup */
 before(function(done){
 	appServer.start();
-	var listeners = {};
 	var events = [
 		'dbConnected',
 		'serverListening'
