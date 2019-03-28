@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const os = require('os');
 const path = require('path');
 
-const config = require('../config.json');
+const { config } = require('../config.js');
 
 /* Classes */
 class MongoStorage{

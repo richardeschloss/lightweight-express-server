@@ -1,4 +1,4 @@
-export default {
+exports.config = {
 	"appServer": {
 		"proto": "https",
 		"host": "localhost",
