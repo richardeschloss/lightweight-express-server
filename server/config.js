@@ -1,6 +1,15 @@
-{
+exports.config = {
+	"appServer": {
+		"proto": "https",
+		"host": "localhost",
+		"port": "8080",
+		"supportedBrowsers": [
+			"chromium",
+			"firefox"
+		]
+	},
     "expressSession": {
-        "secret": "cats",
+        "secret": "cats", // Secret should probably be stronger than this :)
         "resave": false,
         "saveUninitialized": false
     },
@@ -15,12 +24,13 @@
             "ssl": true,
             "sslKey": "~/.ssl/mongoClient.key",
             "sslCert": "~/.ssl/mongoClient.crt",
-            "sslCA": "/etc/ssl/mongo_dev/mongod.pem"
-        },
-        "schemas": {
-            "UserSchema": {
-                "username": { "type": "String", "unique": true, "required": true }
-            }
+            "sslCA": "/etc/ssl/mongo_dev/mongod.pem",
+
+			/* To address deprecations: https://mongoosejs.com/docs/deprecations.html */
+			useCreateIndex: true,
+			useNewUrlParser: true,
+			useFindAndModify: false
+
         }
     }
 }

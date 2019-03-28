@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  lightweight_express_server:
+    image: richardeschloss/lightweight_express_server
+    container_name: lightweight_express_server
+    build: .
+    volumes:
+    - .:/usr/src/app
+    ports:
+    - 5001:5000

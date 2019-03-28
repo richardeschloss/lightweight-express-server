@@ -5,8 +5,10 @@
   "main": "server.js",
   "scripts": {
     "debug": "DEBUG='server,routes:*,utils:*' nodemon server/server.js",
-    "start": "nodemon server/server.js",
-    "test": "mocha server/test"
+	"dev": "nodemon server/server.js",
+	"start": "node server/server.js",
+    "test": "mocha server/test",
+	"test_module": "mocha server/test/gUsers.test.js"
   },
   "keywords": [
     "Lightweight",
@@ -23,22 +25,21 @@
     "minimist": "^1.2.0",
     "mocha": "^5.2.0",
     "morgan": "^1.9.1",
-    "nodemon": "^1.18.7",
-    "q": "^1.5.1",
-    "serve-static": "^1.13.2",
-    "spdy": "^4.0.0"
+    "nodemon": "^1.18.7"
   },
   "dependencies": {
     "async": "^2.6.1",
     "express-session": "^1.15.6",
     "google-auth-library": "^2.0.1",
     "jquery": "^3.3.1",
-    "mongodb": "^3.1.10",
     "mongoose": "^5.4.10",
     "passport": "^0.4.0",
     "passport-google-oauth": "^1.0.0",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
-    "passport-oauth": "^1.0.0"
+    "passport-oauth": "^1.0.0",
+	"q": "^1.5.1",
+    "serve-static": "^1.13.2",
+    "spdy": "^4.0.0"
   }
 }
