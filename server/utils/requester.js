@@ -1,5 +1,6 @@
 /* Requires */
 const debug = require('debug')('utils:requester');
+const http = require('http');
 const https = require('https');
 const q = require('q');
 const securityUtils = require('../utils/security')
@@ -10,6 +11,13 @@ if( keys.err ){
     debug('Error loading cert', keys.err)
     process.exit(1);
 }
+
+const httpAgent = new http.Agent({
+    keepAliveMsecs: 10000,
+    keepAlive: true,
+    maxSockets: Infinity,
+    maxFreeSockets: 256
+})
 
 const httpsAgent = new https.Agent({
     keepAliveMsecs: 10000,
@@ -24,16 +32,22 @@ const httpsAgent = new https.Agent({
 function request(requestOptions, postData, responseOptions){
     var deferred = q.defer();
     var options = {
-        agent: httpsAgent,
-        hostname: 'localhost',
-        port: 8080,
+        hostname: requestOptions.hostname || 'localhost',
+        port: requestOptions.port || 8080,
         path: requestOptions.path,
         method: requestOptions.method || 'GET',
-        headers: {}
+        headers: requestOptions.headers || {}
+    }
+    var protoStr = requestOptions.proto || 'https';
+    var proto;
+    if( protoStr == 'https' ){
+      proto = https;
+      options.agent = httpsAgent
+    } else {
+      proto = http;
+      options.agent = httpAgent
     }
     var postStr;
-
-    Object.assign(options, requestOptions)
     if( options.method == 'POST' ){
         options.headers['Content-Type'] = 'application/json';
         postStr = JSON.stringify(postData)
@@ -41,7 +55,7 @@ function request(requestOptions, postData, responseOptions){
     debug('options', options)
     debug('postStr', postStr)
 
-    https.request(options, (res) => {
+    proto.request(options, (res) => {
         deferred.notify({statusCode: res.statusCode, headers: res.headers})
         if( res.statusCode != 200 && res.statusCode != 302 ){
             deferred.reject(res.statusCode);

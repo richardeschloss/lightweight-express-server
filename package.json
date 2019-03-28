@@ -5,10 +5,10 @@
   "main": "server.js",
   "scripts": {
     "debug": "DEBUG='server,routes:*,utils:*' nodemon server/server.js",
-	"dev": "nodemon server/server.js",
-	"start": "node server/server.js",
+    "dev": "nodemon server/server.js",
+    "start": "node server/server.js",
     "test": "mocha server/test",
-	"test_module": "mocha server/test/gUsers.test.js"
+    "test_module": "nodemon --exec mocha server/test/app.test.js"
   },
   "keywords": [
     "Lightweight",
@@ -38,7 +38,7 @@
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
     "passport-oauth": "^1.0.0",
-	"q": "^1.5.1",
+    "q": "^1.5.1",
     "serve-static": "^1.13.2",
     "spdy": "^4.0.0"
   }

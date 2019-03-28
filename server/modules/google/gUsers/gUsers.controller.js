@@ -1,24 +1,25 @@
 /* Requires */
 const assert = require('assert')
 const debug = require('debug')('controllers:users')
+const { config } = require('../../../config.js');
 const passport = require('passport');
 const { OAuth2Strategy:GoogleStrategy } = require('passport-google-oauth');
 const { GoogleUserService }  = require('./gUsers.service');
 const { UserService } = require('../../users/users.service');
-const os = require('os')
+const path = require('path');
 
 /* Constants */
 const gUserService = new GoogleUserService();
 const userService = new UserService();
 
-// Require googleClient.json. This code expects the json to be structured as:
+// Require googleClient from './.oauth/oauthClients.js'. This code expects the object to be structured as:
 /*
 {
-    "CLIENT_ID": "[your_client_id].apps.googleusercontent.com",
-    "CLIENT_SECRET": "[your_client_secret]"
+    "CLIENT_ID": process.env.OAUTH_GOOGLE_CLIENT || "[your_client_id].apps.googleusercontent.com",
+    "CLIENT_SECRET": process.env.OAUTH_GOOGLE_CLIENT_SECRET || "[your_client_secret]"
 }
 */
-const googleClient = require(`${os.homedir()}/.oauth/googleClient.json`)
+const { googleClient } = require(path.resolve(config.appServer.server_root, '.oauth/oauthClients.js'))
 assert(googleClient.ClIENT_ID != '', 'CLIENT_ID needed')
 assert(googleClient.ClIENT_SECRET != '', 'ClIENT_SECRET needed')
 
@@ -26,7 +27,7 @@ assert(googleClient.ClIENT_SECRET != '', 'ClIENT_SECRET needed')
 passport.use(new GoogleStrategy({
     clientID: googleClient.CLIENT_ID,
     clientSecret: googleClient.CLIENT_SECRET,
-    callbackURL: 'https://localhost:8080/google/gUsers/auth/callback'
+    callbackURL: '/google/gUsers/auth/callback'
   },
   function(accessToken, refreshToken, profile, done) {
       profile.googleId = profile.id;

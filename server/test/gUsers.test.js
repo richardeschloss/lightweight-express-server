@@ -1,37 +1,30 @@
 /* Requires */
-const { AppServer } = require('../server.js');
-const { assert } = require('chai');
+const _ = require('lodash');
 const async = require('async');
+const { config } = require('../config.js');
+const { assert } = require('chai');
 const { request } = require('../utils/requester')
+const { waitForServerStart, waitForServerStop } = require('../utils/test')
 
 /* Constants */
-const appServer = new AppServer({});
+const serverCfg = config.appServer;
+const reqOptions = _.pick(serverCfg, ['proto', 'hostname', 'port']);
 
 /* Test Setup */
-before(function(done){
-	appServer.start();
-	var events = [
-		'dbConnected',
-		'serverListening'
-    ]
-	async.each(events, (evt, callback) => {
-		appServer[evt] = callback;
-	}, done)
-})
+before(waitForServerStart)
 
 /* Test Cases */
 describe('Google:gUsers Module', function(){
     it('shall retrieve the Google clientID for the app', (done) => {
-        request({path: `/google/gUsers/auth/getClientID`}, {}, { returnJSON: true })
-        .then((json) => {
-            assert(json.CLIENT_ID)
-            done()
-        })
-        .catch(done)
+			reqOptions.path = `/google/gUsers/auth/getClientID`
+      request(reqOptions, {}, { returnJSON: true })
+      .then((json) => {
+        assert(json.CLIENT_ID)
+        done()
+      })
+      .catch(done)
     })
 })
 
 /* Test Cleanup */
-after(function(){
-	appServer.stop();
-})
+after(waitForServerStop)
