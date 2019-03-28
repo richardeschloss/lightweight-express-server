@@ -2,7 +2,11 @@ export default {
 	"appServer": {
 		"proto": "https",
 		"host": "localhost",
-		"port": "8080"
+		"port": "8080",
+		"supportedBrowsers": [
+			"chromium",
+			"firefox"
+		]
 	},
     "expressSession": {
         "secret": "cats", // Secret should probably be stronger than this :)
