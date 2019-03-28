@@ -24,8 +24,12 @@ exports.config = {
             "ssl": true,
             "sslKey": "~/.ssl/mongoClient.key",
             "sslCert": "~/.ssl/mongoClient.crt",
-            "sslCA": "/etc/ssl/mongo_dev/mongod.pem"
+            "sslCA": "/etc/ssl/mongo_dev/mongod.pem",
 
+			/* To address deprecations: https://mongoosejs.com/docs/deprecations.html */
+			useCreateIndex: true,
+			useNewUrlParser: true,
+			useFindAndModify: false
 
         }
     }
