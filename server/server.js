@@ -1,17 +1,18 @@
 /* Requires */
-const argv = require('minimist')(process.argv.slice(2))
+// const argv = require('minimist')(process.argv.slice(2))
 const bodyParser = require('body-parser');
 const debug = require('debug')('server');
 const express = require('express');
 const logger = require('morgan');
-const { MongoStorage } = require('./utils/storage');
+// const { MongoStorage } = require('./utils/storage');
 const passport = require('passport')
 const path = require('path');
 const securityUtils = require('./utils/security');
 const serveStatic = require('serve-static');
 const session = require("express-session");
 
-const config = require('./config.json')
+const config = require('./config.js')
+const db = require('./db.js');
 const serverOptions = {
     proto: argv.proto || 'https',
     host: argv.host || 'localhost',
@@ -72,7 +73,7 @@ const createServer = {
         server = https.createServer(options, app);
     }
 }
-const mongoStorage = new MongoStorage();
+// const mongoStorage = new MongoStorage();
 const supportedBrowsers = ['chromium', 'firefox'] // Tweak this list based on your app's requirements...
 
 /* Methods */
@@ -125,14 +126,14 @@ function serverCreated(){
     });
 
     if( app.get('env') === 'development' ){
-        // If you want to watch for file changes, install chokidar-socket-emitter (or your favorite watcher)
+        // If you want to watch for file changes, install nodemon or chokidar-socket-emitter (or your favorite watcher)
         // and uncomment this line: (probably only want to do in dev mode...)
         // require('chokidar-socket-emitter')({app: server})
     }
 }
 
 function setCustomCacheControl(res, reqPath){
-    var regEx = new RegExp(/jspm_packages|bower_components/) // Define the reg ex
+    var regEx = new RegExp(/node_modules/) // Define the reg ex
     if( reqPath.match(regEx) != null ){
         res.setHeader('Cache-Control', 'public, max-age=60') // cache dependencies in the browser for [60] seconds
     }
@@ -177,17 +178,17 @@ app.use(function(err, req, res, next) {
 createServer[serverOptions.proto]();
 if( server ) serverCreated();
 
-/* Connect to DB */
-mongoStorage
-.connect()
-.then((resp) => {
-    console.log(resp)
-    if( exports.mongoConnected ) {
-        exports.mongoConnected();
-        exports.disconnectMongo = function(){
-            console.log('disconnect mongo...')
-            mongoStorage.disconnect()
-        }
-    }
-})
-.catch(console.error)
+// /* Connect to DB */
+// mongoStorage
+// .connect()
+// .then((resp) => {
+//     console.log(resp)
+//     if( exports.mongoConnected ) {
+//         exports.mongoConnected();
+//         exports.disconnectMongo = function(){
+//             console.log('disconnect mongo...')
+//             mongoStorage.disconnect()
+//         }
+//     }
+// })
+// .catch(console.error)

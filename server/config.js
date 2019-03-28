@@ -1,6 +1,11 @@
-{
+export default {
+	"appServer": {
+		"proto": "https",
+		"host": "localhost",
+		"port": "8080"
+	},
     "expressSession": {
-        "secret": "cats",
+        "secret": "cats", // Secret should probably be stronger than this :)
         "resave": false,
         "saveUninitialized": false
     },
@@ -16,11 +21,8 @@
             "sslKey": "~/.ssl/mongoClient.key",
             "sslCert": "~/.ssl/mongoClient.crt",
             "sslCA": "/etc/ssl/mongo_dev/mongod.pem"
-        },
-        "schemas": {
-            "UserSchema": {
-                "username": { "type": "String", "unique": true, "required": true }
-            }
+
+
         }
     }
 }

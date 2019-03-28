@@ -6,3 +6,6 @@ notes.txt
 *.key
 *.p12
 .ssl
+.env
+*.log
+npm-debug.log*
