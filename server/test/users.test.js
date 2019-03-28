@@ -1,10 +1,13 @@
 /* Requires */
+const { AppServer } = require('../server.js');
 const assert = require('chai').assert;
+const async = require('async');
 const https = require('https');
 const q = require('q');
 const { request } = require('../utils/requester')
 
 /* Constants */
+const appServer = new AppServer({});
 const userInfo = {
     username: 'test',
     password: 'test',
@@ -64,6 +67,19 @@ function updateUser(info){
     }
     return request(requestOptions, info, { returnJSON: true});
 }
+
+/* Test Setup */
+before(function(done){
+	appServer.start();
+	var listeners = {};
+	var events = [
+		'dbConnected',
+		'serverListening'
+    ]
+	async.each(events, (evt, callback) => {
+		appServer[evt] = callback;
+	}, done)
+})
 
 /* Test Suite */
 describe('Users Module', function(){
@@ -186,4 +202,9 @@ describe('Users Module', function(){
             }, done)
         })
     })
+})
+
+/* Test Cleanup */
+after(function(){
+	appServer.stop();
 })

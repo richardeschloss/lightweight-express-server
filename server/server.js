@@ -1,5 +1,4 @@
 /* Requires */
-// const argv = require('minimist')(process.argv.slice(2))
 const bodyParser = require('body-parser');
 const debug = require('debug')('server');
 const express = require('express');
@@ -24,7 +23,7 @@ app = express(); // Instantiate the express app
 const env = app.get('env');
 
 const serverProps = [
-	{ name: 'proto', default: 'http' },
+	{ name: 'proto', default: 'https' },
 	{ name: 'host', default: 'localhost' },
 	{ name: 'port', default: '8080' },
 	{ name: 'browser' },
@@ -34,7 +33,7 @@ const serverProps = [
 class AppServer{
 	constructor(cfg){
 		serverProps.forEach((prop) => {
-			this[prop.name] = cfg[prop.name] || serverProps[prop.default]
+			this[prop.name] = cfg[prop.name] || prop.default
 		})
 		this.protoStr = this.proto;
 		if( this.protoStr == 'http2' ) this.protoStr = 'https';
@@ -123,6 +122,7 @@ class AppServer{
 		        return spdy.createServer(options, app);
 			}
 		}
+		console.log('this', this)
 		this.server = createServer[this.proto]({});
 	}
 
@@ -146,7 +146,9 @@ class AppServer{
 
 	start(){
 		if( !this.server ) return;
-		db.connect().then(console.log);
+		db.connect().then(() => {
+			if( this['dbConnected'] ) this['dbConnected']();
+		});
 		this.server
 		.listen(this.port, this.host)
 		.on('error', (error) => {
@@ -173,13 +175,7 @@ class AppServer{
 			}
 		})
 		.on('listening', () => {
-			if( exports.serverListening ){
-				exports.serverListening();
-				exports.stop = function(){
-					console.log('close server...')
-					server.close();
-				}
-			}
+			if( this['serverListening'] ) this['serverListening']();
 			var addr = this.server.address();
 			var bind = typeof addr === 'string'
 				? 'pipe ' + addr

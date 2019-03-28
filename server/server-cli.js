@@ -8,13 +8,15 @@ const serverCfg = {
     port: argv.port || 8080,
     browser: argv.browser
 }
-// const supportedBrowsers = ['chromium', 'firefox'] // Tweak this list based on your app's requirements...
 
 /* Start */
 const appServer = new AppServer(serverCfg);
 appServer.start();
-appServer.server.on('listening', () => {
-	console.log('Server started', appServer.url)
-})
 
-// console.log('server-cli running...', argv)
+appServer.dbConnected = () => {
+	console.log('DB dbConnected')
+}
+
+appServer.serverListening = () => {
+	console.log('Server listening', appServer.url)
+}
