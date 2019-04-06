@@ -1,15 +1,13 @@
 FROM node:10.15.3-alpine
 
-WORKDIR /usr/src/app
+ENV MYAPPDIR /usr/src/app
+WORKDIR $MYAPPDIR
 
 ARG NODE_ENV
 ENV NODE_ENV $NODE_ENV
 
-COPY package.json /usr/src/app/
+COPY package.json $MYAPPDIR/
 RUN npm install
+RUN apk add --no-cache bash openssl
 
-COPY . /usr/src/app
-
-ENV PORT 5000
-EXPOSE $PORT
-CMD [ "npm", "start" ]
+COPY . $MYAPPDIR

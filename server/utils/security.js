@@ -1,15 +1,76 @@
 /* Requires */
-const argv = require('minimist')(process.argv.slice(2))
 const async = require('async');
+const { config } = require('../config.js');
 const debug = require('debug')('utils:security')
 const fs = require('fs');
 const path = require('path');
+const q = require('q');
 const spawn = require('child_process').spawn;
 
 /* Exports */
+exports.generateMongoCerts = function(options, callback){
+  // Hi, checking this out? Prefer bash? That's cool! Here you go:
+  // openssl req -newkey rsa:2048 -new -x509 -days 365 -nodes -out mongod.crt -keyout mongod.key -subj /CN=localhost
+  // openssl req -newkey rsa:2048 -new -x509 -days 365 -nodes -out mongoClient.crt -keyout mongoClient.key -subj /CN=localhost
+  // cat mongoClient.key mongoClient.crt > mongoClient.pem
+  // cat mongod.key mongod.crt > mongod.pem
+  function generateCert(){
+    var deferred = q.defer();
+    var who = options.who || 'client';
+    var cmd = 'openssl';
+    var args = [
+        'req',
+        '-newkey', 'rsa:4096',
+        '-new', '-x509',
+        '-days', options[who].days,
+        '-nodes',
+        '-out', options[who].crt,
+        '-keyout', options[who].key,
+        '-subj', [`/CN=${options[who].name}`,
+            `/emailAddress=${options[who].emailAddress}`,
+            `/O=${options[who].organization}`,
+            `/OU=${options[who].organizationalUnit}`,
+            `/C=${options[who].countryCode}`,
+            `/ST=${options[who].state}`,
+            `/L=${options[who].city}`
+        ].join('')
+    ]
+
+    debug(cmd, args.join(' '))
+    spawn(cmd, args)
+    .on('close', deferred.resolve);
+    return deferred.promise;
+  }
+
+  function packageCert(){
+    var who = options.who || 'client';
+    var key = fs.readFileSync(options[who].key)
+    var crt = fs.readFileSync(options[who].crt)
+    fs.appendFileSync(options[who].pem, key);
+    fs.appendFileSync(options[who].pem, crt);
+
+  }
+
+  function clearRemnants(){
+    ['client', 'server'].forEach((item) => {
+      ['key', 'crt'].forEach((subItem) => {
+        fs.unlinkSync(options[item][subItem]);
+      })
+    })
+  }
+
+  generateCert()
+  .then(packageCert)
+  .then(() => { options.who = 'server' })
+  .then(generateCert)
+  .then(packageCert)
+  .then(clearRemnants)
+  .then(callback);
+}
+
 exports.generateClientCert = function(options, callback){
     const cmd = 'openssl';
-    console.log('generateClientCert...', options)
+    debug('generateClientCert...', options)
 
     function generateCSR(next){
         var args = [
@@ -48,9 +109,10 @@ exports.generateClientCert = function(options, callback){
             '-set_serial', '01',
             '-days', options.client.days
         ]
+        debug('args', args)
         spawn(cmd, args)
         .on('close', () => {
-            debug('Signed', options.client.csr, 'and created', options.client.csr)
+            debug('Signed', options.client.csr, 'and created', options.client.crt)
             next();
         })
     }
@@ -72,32 +134,49 @@ exports.generateClientCert = function(options, callback){
         })
     }
 
+    function clearRemnants(next){
+      ['privateKey', 'csr', 'crt'].forEach((item) => {
+        fs.unlinkSync(options.client[item]);
+      })
+      next();
+    }
+
     async.series([
         generateCSR,
         signCSR,
-        exportCert
+        exportCert,
+        clearRemnants
     ], callback)
 }
 
 exports.generateSelfSignedCert = function(options, callback){
     /*
-    The following was added to the end of /etc/ssl/openssl.cnf: (i.e., my extensions)
-        [ myExt ]
-        basicConstraints = critical,CA:true
-        subjectKeyIdentifier = hash
-        authorityKeyIdentifier = keyid:always,issuer
-        subjectAltName = DNS:localhost
+    Basing off openssl's template /etc/ssl/openssl.cnf (copied to ./.ssl)
+    The following was added to the end of that (i.e., myExt)
+      [ myExt ]
+      basicConstraints = critical,CA:true
+      subjectKeyIdentifier = hash
+      authorityKeyIdentifier = keyid:always,issuer
+      subjectAltName = @alt_names
+
+      [alt_names]
+      DNS.1 = localhost
+      DNS.2 = lightweight_express_server
     */
 
+    const dest = {
+      keyout: options.key || 'localhost.key',
+      out: options.crt || 'localhost.crt'
+    }
     const cmd = 'openssl';
     const args = [
         'req',
         '-newkey', 'rsa:2048',
         '-x509',
         '-nodes',
-        '-keyout', options.key || 'localhost.key',
+        '-keyout', dest.keyout,
         '-new',
-        '-out', options.crt || 'localhost.crt',
+        '-out', dest.out,
         '-subj', [
             `/CN=(${options.domain || 'localhost'})`,
             `/emailAddress=${options.emailAddress || ''}`,
@@ -110,21 +189,20 @@ exports.generateSelfSignedCert = function(options, callback){
         '-sha256',
         '-days', options.days || 365,
         '-extensions', options.extSection || 'myExt',
-        '-config', options.configFile || '/etc/ssl/openssl.cnf'
+        '-config', options.configFile || './.ssl/openssl.cnf'
     ]
     debug(cmd, args.join(' '))
     spawn(cmd, args)
     .on('close', () => {
-        callback();
+        if( callback ) callback(dest);
     })
 }
 
-exports.loadSelfSignedCert = function(options, callback){
+exports.loadSelfSignedCert = function(callback){
     var keys = {}
-    const serverSSLDir = '/etc/ssl/selfSigned'
     try{
-        keys.key = fs.readFileSync(path.resolve(serverSSLDir,'localhost.key'))
-        keys.cert = fs.readFileSync(path.resolve(serverSSLDir,'localhost.crt'))
+        keys.key = fs.readFileSync(path.resolve(config.appServer.ssl.key));
+        keys.cert = fs.readFileSync(path.resolve(config.appServer.ssl.cert));
         if( callback ) callback();
     } catch(err){
         keys.err = err;
@@ -137,21 +215,11 @@ exports.viewCertificate = function(options, callback){
     const cmd = 'openssl';
     const args = [
         'x509',
-        '-in', options.crt || 'localhost.crt',
+        '-in', options.crt || path.resolve(config.appServer.ssl.cert),
         '-text'
     ];
     const child = spawn(cmd, args)
     child.stdout.on('data', (data) => console.log(data.toString()))
     child.stderr.on('data', (data) => console.error(data.toString()))
     child.on('close', callback)
-}
-
-if( argv.action ){
-    if( !exports[argv.action] ){
-        console.log('possible actions:\r\n', Object.keys(exports))
-        process.exit(1);
-    }
-    exports[argv.action](argv, () => {
-        console.log(argv.action, 'done')
-    })
 }

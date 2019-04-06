@@ -1,5 +1,6 @@
 /* Requires */
 const debug = require('debug')('controllers:users')
+const { config } = require('../../config.js');
 const passport = require('passport');
 const { Strategy:LocalStrategy } = require('passport-local');
 const { UserService }  = require('./users.service');
@@ -39,16 +40,17 @@ class UserCtrl{
     }
 
     authenticate(req, res, next){
-        passport.authenticate('local', function(err, user, info) {
-            if( err ){
-                return next(err);
-            }
+      console.log('BASIC AUTH')
+      passport.authenticate('local', function(err, user, info) {
+        if( err ){
+          return next(err);
+        }
 
-            req.logIn(user, function(err) {
-                if (err) { return next(err); }
-                return res.redirect('/app/app.html');
-            });
-        })(req, res, next);
+        req.logIn(user, function(err) {
+          if (err) { return next(err); }
+          return res.redirect('/app/app.html');
+        });
+      })(req, res, next);
     }
 
     checkUser(req, res, next){
@@ -60,7 +62,7 @@ class UserCtrl{
     }
 
     delete(req, res, next){
-        console.log('delete', req.body)
+        // console.log('delete', req.body, req.user.id)
         if( req.user.id != req.body.id ){
             return next({
                 err: 'wrongUserId',
@@ -120,13 +122,14 @@ class UserCtrl{
 
         var options = {
             server: {
-                key: '/etc/ssl/selfSigned/localhost.key',
-                crt: '/etc/ssl/selfSigned/localhost.crt'
+                key: config.appServer.ssl.key,
+                crt: config.appServer.ssl.cert
             },
             client: {
                 privateKey: req.body.name + '.key',
                 csr: req.body.name + '.csr',
                 crt: req.body.name + '.crt',
+                pem: req.body.name + '.pem',
                 p12: req.body.name + '.p12',
                 days: req.body.days || '365',
                 name: req.body.name,
@@ -164,7 +167,7 @@ class UserCtrl{
             next();
         } else if( cert.subject ){
             res.status(403)
-    		.send(`Sorry ${cert.subject.CN}, certificates from ${cert.issuer.CN} are not welcome here.`)
+        .send(`Sorry ${cert.subject.CN}, certificates from ${cert.issuer.CN} are not welcome here.`)
         } else {
             res.status(401)
             next({msg: `Sorry, but you need to provide a client certificate to continue.`})

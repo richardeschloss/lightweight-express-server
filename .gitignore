@@ -1,12 +1,17 @@
-node_modules
-localhost.*
-notes.txt
+# Ignore extensions
 *.crt
 *.csr
 *.key
 *.p12
-.ssl
-.env
+*.pem
 *.log
+
+# Ignore files
+localhost.*
+node_modules
+notes.txt
 npm-debug.log*
 server/config.js
+
+# Private folders
+.oauth

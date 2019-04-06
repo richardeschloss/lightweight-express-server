@@ -3,9 +3,50 @@ version: '3'
 services:
   lightweight_express_server:
     image: richardeschloss/lightweight_express_server
-    container_name: lightweight_express_server
+    container_name: $SERVER_HOSTNAME
     build: .
     volumes:
     - .:/usr/src/app
+    - node_modules:/usr/src/app/node_modules
+    env_file: .env
     ports:
-    - 5001:5000
+    - "8081:8080"
+    networks:
+    - app-network
+    command: ./server/utils/waitFor.sh $MONGOD_HOSTNAME:$MONGOD_PORT -- npm run dev
+
+  mocha_tests:
+    image: richardeschloss/lightweight_express_server
+    container_name: mocha_tests
+    env_file: .env
+    volumes:
+    - .:/usr/src/app
+    - node_modules:/usr/src/app/node_modules
+    networks:
+    - app-network
+    command: ./server/utils/waitFor.sh $SERVER_HOSTNAME:$SERVER_PORT -- npm run test_module
+
+  my_mongo:
+    image: mongo:4.1.8-xenial
+    container_name: $MONGOD_HOSTNAME
+    restart: unless-stopped
+    env_file: .env
+    environment:
+    - MONGO_INITDB_ROOT_USERNAME=$MONGOD_ROOT_USERNAME
+    - MONGO_INITDB_ROOT_PASSWORD=$MONGOD_ROOT_PASSWORD
+    volumes:
+    - ./.mongod:/etc/mongod
+    - dbdata:/data/db
+    networks:
+    - app-network
+    command:
+    - '-f'
+    - '/etc/mongod/mongod.conf'
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+  node_modules:

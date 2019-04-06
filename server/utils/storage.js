@@ -53,7 +53,7 @@ class MongoStorage{
                 }
             })
         }
-
+        
         if( options.authMechanism == 'MONGODB-X509' ){
             // Auth using client X509 cert:
             this.dbName = 'admin';
