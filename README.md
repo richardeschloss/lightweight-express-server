@@ -1,5 +1,7 @@
 # lightweight-express-server
-Lightweight Express Server (seriously lightweight)... umm hmm, first version was very lightweight...but the latest release grew into what it is for good reason...
+![img](https://github.com/richardeschloss/lightweight-express-server/blob/gh-pages/lightweight-express-server_graphic.png?raw=true)
+
+Lightweight Express Server (seriously lightweight)... umm hmm, well, the first version was very lightweight and the most recent version is still relatively lightweight...(the latest release grew into what it is for good reason...)
 
 ## Description
 Lightweight express server has the very basic setup to spin up either an http, https, or spdy (http2) server. Will plug in http3 when that becomes ready and stable :). Also comes with a handy server-side CLI.
