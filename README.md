@@ -55,7 +55,7 @@ exit on db connection errors; you just won't be able to do much that involves pe
 #### b) Using Docker containers:
 ##### b.1. Pre-requisites:
 
--- Install [Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
+-- Install [Docker community edition](https://hub.docker.com/search/?type=edition&offering=community) and [Docker-Compose](https://docs.docker.com/compose/install)
 
 That's it! one of the reasons people like Docker...the basic idea is..."what I see on my machine is *exactly* what you're supposed to see on your machine"
 
