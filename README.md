@@ -145,3 +145,10 @@ This assumes nodejs binary is at `/usr/local/bin/node`. If it's not there, just 
     #    CAFile: /etc/mongod/mongoClient.pem
     ...
     ```
+
+## Credits
+* Marko Klemetti (@mrako) - for the wait-For.sh script
+* Kathleen Juell (@katjuell) - for the helpful docs at Digital Ocean
+
+## Like what you see? Want it to be better?
+Donations welcome (eventually, once I get the button on here)
