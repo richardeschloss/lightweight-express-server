@@ -8,7 +8,7 @@ Lightweight express server has the very basic setup to spin up either an http, h
 
 Think of this as http-server on steroids. http-server is great for getting up and running with front-end development in pretty much any folder on your machine. However, there may be a point where you require much greater control over the backend (caching, auth, etc) and this project can be a great starting point for most Express-based web apps.
 
-This is not a binary, it's the source code that you can toy with. I've seen lots of blogs, forums etc where I could sense some confusion out there in the wild. This project has example code that works out of the box and should help to make things less confusing.
+This is not a binary, it's the source code that you can toy with. Whether you want to run the app in docker containers or on your filesystem not is purely up to you. You have the options. (But, if you spin up docker containers, make sure your `node_modules` folder is non-existent)
 
 ## Setup
 ### 1. First step is to clone this repo:
