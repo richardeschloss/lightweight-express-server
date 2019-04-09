@@ -1,5 +1,5 @@
 # lightweight-express-server
-![img](https://raw.githubusercontent.com/richardeschloss/lightweight-express-server/gh-pages/lightweight-express-server_graphic.png)
+![img](https://raw.githubusercontent.com/richardeschloss/lightweight-express-server/gh-pages/assets/lightweight-express-server_graphic.png)
 
 Lightweight Express Server (seriously lightweight)... umm hmm, well, the first version was very lightweight and the most recent version is still relatively lightweight...(the latest release grew into what it is for good reason...)
 
