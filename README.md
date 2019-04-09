@@ -1,10 +1,10 @@
 # lightweight-express-server
-![img](https://github.com/richardeschloss/lightweight-express-server/blob/gh-pages/lightweight-express-server_graphic.png?raw=true)
+![img](https://raw.githubusercontent.com/richardeschloss/lightweight-express-server/gh-pages/lightweight-express-server_graphic.png)
 
 Lightweight Express Server (seriously lightweight)... umm hmm, well, the first version was very lightweight and the most recent version is still relatively lightweight...(the latest release grew into what it is for good reason...)
 
 ## Description
-Lightweight express server has the very basic setup to spin up either an http, https, or spdy (http2) server. Will plug in http3 when that becomes ready and stable :). Also comes with a handy server-side CLI.
+Lightweight express server has the very basic setup to spin up either an http, https, or spdy (http2) server. I will plug in http3 when that becomes ready and stable :). Also comes with a handy server-side CLI.
 
 Think of this as http-server on steroids. http-server is great for getting up and running with front-end development in pretty much any folder on your machine. However, there may be a point where you require much greater control over the backend (caching, auth, etc) and this project can be a great starting point for most Express-based web apps.
 
