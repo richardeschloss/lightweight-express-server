@@ -149,6 +149,7 @@ This assumes nodejs binary is at `/usr/local/bin/node`. If it's not there, just 
 ## Credits
 * Marko Klemetti (@mrako) - for the wait-For.sh script
 * Kathleen Juell (@katjuell) - for the helpful docs at Digital Ocean
+* Jason Watmore (@cornflourblue) - for useful blogs
 
 ## Like what you see? Want it to be better?
 Donations welcome (a sandwich and a cup of coffee help keep me going :))
