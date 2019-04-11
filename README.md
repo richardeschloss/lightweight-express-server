@@ -151,4 +151,6 @@ This assumes nodejs binary is at `/usr/local/bin/node`. If it's not there, just 
 * Kathleen Juell (@katjuell) - for the helpful docs at Digital Ocean
 
 ## Like what you see? Want it to be better?
-Donations welcome (eventually, once I get the button on here)
+Donations welcome (a sandwich and a cup of coffee help keep me going :))
+
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=GA5PB2RQ7FN2N&source=url)
