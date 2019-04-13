@@ -1,12 +1,14 @@
 # lightweight-express-server
-Lightweight Express Server (seriously lightweight)... umm hmm, first version was very lightweight...but the latest release grew into what it is for good reason...
+![img](https://raw.githubusercontent.com/richardeschloss/lightweight-express-server/gh-pages/assets/lightweight-express-server_graphic.png)
+
+Lightweight Express Server (seriously lightweight)... umm hmm, well, the first version was very lightweight and the most recent version is still relatively lightweight...(the latest release grew into what it is for good reason...)
 
 ## Description
-Lightweight express server has the very basic setup to spin up either an http, https, or spdy (http2) server. Will plug in http3 when that becomes ready and stable :). Also comes with a handy server-side CLI.
+Lightweight express server has the very basic setup to spin up either an http, https, or spdy (http2) server. I will plug in http3 when that becomes ready and stable :). Also comes with a handy server-side CLI.
 
 Think of this as http-server on steroids. http-server is great for getting up and running with front-end development in pretty much any folder on your machine. However, there may be a point where you require much greater control over the backend (caching, auth, etc) and this project can be a great starting point for most Express-based web apps.
 
-This is not a binary, it's the source code that you can toy with. I've seen lots of blogs, forums etc where I could sense some confusion out there in the wild. This project has example code that works out of the box and should help to make things less confusing.
+This is not a binary, it's the source code that you can toy with. Whether you want to run the app in docker containers or on your filesystem not is purely up to you. You have the options. (But, if you spin up docker containers, make sure your `node_modules` folder is non-existent)
 
 ## Setup
 ### 1. First step is to clone this repo:
@@ -53,7 +55,7 @@ exit on db connection errors; you just won't be able to do much that involves pe
 #### b) Using Docker containers:
 ##### b.1. Pre-requisites:
 
--- Install [Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
+-- Install [Docker community edition](https://hub.docker.com/search/?type=edition&offering=community) and [Docker-Compose](https://docs.docker.com/compose/install)
 
 That's it! one of the reasons people like Docker...the basic idea is..."what I see on my machine is *exactly* what you're supposed to see on your machine"
 
@@ -143,3 +145,13 @@ This assumes nodejs binary is at `/usr/local/bin/node`. If it's not there, just 
     #    CAFile: /etc/mongod/mongoClient.pem
     ...
     ```
+
+## Credits
+* Marko Klemetti (@mrako) - for the wait-For.sh script
+* Kathleen Juell (@katjuell) - for the helpful docs at Digital Ocean
+* Jason Watmore (@cornflourblue) - for useful blogs
+
+## Like what you see? Want it to be better?
+Donations welcome (a sandwich and a cup of coffee help keep me going :))
+
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=GA5PB2RQ7FN2N&source=url)
