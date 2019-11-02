@@ -1,4 +1,7 @@
 # lightweight-express-server
+UPDATE 11/02/2019: With all the advancements in the JS language and paradigm, this code is pretty OLD and in much need of a facelift! I have plans to completely REDO this and give it the proper treatment it deserves. It started out as lightweight, but is WAY MORE BLOATED than what I wanted it to be. The re-write will hopefully be much more elegant and powerful! That's my pledge.
+
+
 ![img](https://raw.githubusercontent.com/richardeschloss/lightweight-express-server/gh-pages/assets/lightweight-express-server_graphic.png)
 
 Lightweight Express Server (seriously lightweight)... umm hmm, well, the first version was very lightweight and the most recent version is still relatively lightweight...(the latest release grew into what it is for good reason...)
