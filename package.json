@@ -31,7 +31,7 @@
     "async": "^2.6.1",
     "express-session": "^1.15.6",
     "google-auth-library": "^2.0.1",
-    "jquery": "^3.4.0",
+    "jquery": "^3.5.0",
     "mongoose": "^5.7.5",
     "passport": "^0.4.0",
     "passport-google-oauth": "^1.0.0",
